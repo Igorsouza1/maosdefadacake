@@ -1,103 +1,122 @@
-import Image from "next/image";
+"use client"
+
+import { useState } from "react"
+import { ShopHeader } from "@/components/shop-header"
+import { ServiceButtons } from "@/components/service-buttons"
+import { CategoryTabs } from "@/components/category-tabs"
+import { ProductCard } from "@/components/product-card"
+import { CartSheet } from "@/components/cart-sheet"
+import { toast } from "sonner"
+import { categories, getProductsByCategory } from "@/data/products"
+import { useFavorites } from "@/hooks/use-favorites"
+import { useRouter } from "next/navigation"
+
+interface CartItemCustomization {
+  type: string
+  label: string
+  value: string
+  price: number
+}
+
+interface CartItem {
+  product: {
+    id: string
+    name: string
+    price: number
+    category: string
+    description?: string
+    imageUrl?: string
+  }
+  quantity: number
+  customizations?: CartItemCustomization[]
+  customMessage?: string
+  totalPrice: number
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedCategory, setSelectedCategory] = useState("Todos")
+  const [cart, setCart] = useState<CartItem[]>([])
+  const { toggleFavorite, isFavorite } = useFavorites()
+  const router = useRouter()
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const filteredProducts = getProductsByCategory(selectedCategory)
+
+  // Remova esta função:
+  // const handleAddToCart = (productId: string) => {
+  //   // Redirecionar para a página de personalização do produto
+  //   router.push(`/product/${productId}`)
+  // }
+
+  const handleUpdateQuantity = (productId: string, newQuantity: number) => {
+    setCart((prevCart) =>
+      prevCart.map((item) => (item.product.id === productId ? { ...item, quantity: newQuantity } : item)),
+    )
+  }
+
+  const handleRemoveItem = (productId: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId))
+
+    toast.info("Item removido", {
+      description: "O item foi removido da sua sacola.",
+      duration: 2000,
+    })
+  }
+
+  const handleCheckout = () => {
+    toast.success("Pedido finalizado", {
+      description: "Seu pedido foi enviado com sucesso!",
+      duration: 3000,
+      action: {
+        label: "Acompanhar",
+        onClick: () => console.log("Acompanhar pedido"),
+      },
+    })
+  }
+
+  const cartTotal = cart.reduce((total, item) => total + item.totalPrice * item.quantity, 0)
+  const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0)
+
+  return (
+    <main className="pb-24 bg-gray-50 min-h-screen">
+      <ShopHeader name="Mãos de Fada Cake" rating={5.0} imageUrl="/bolo-andar1.jpeg" logoUrl="/logo.jpg" />
+
+      <ServiceButtons />
+
+      <CategoryTabs
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
+
+      <div className="px-4 mt-6">
+        {filteredProducts.map((product) => (
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            description={product.description}
+            imageUrl={product.imageUrl}
+            onAddToCart={() => {}} // Função vazia, já que estamos usando Link diretamente
+            onToggleFavorite={() => toggleFavorite(product.id)}
+            isFavorite={isFavorite(product.id)}
+          />
+        ))}
+      </div>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg p-4 flex justify-between items-center">
+        <div>
+          <p className="text-sm text-gray-500">Total do Pedido</p>
+          <p className="font-bold text-rose-800 text-lg">R$ {cartTotal.toFixed(2).replace(".", ",")}</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <CartSheet
+          cart={cart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+        />
+      </div>
+    </main>
+  )
 }
+
