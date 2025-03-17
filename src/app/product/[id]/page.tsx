@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge"
 import { OrderFooter } from "@/components/order-footer"
 import { QuantitySelector } from "@/components/quantity-selector"
 
+export const runtime = "edge"
+
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
@@ -748,10 +750,11 @@ export default function ProductPage() {
         {/* Mensagem personalizada */}
         <div>
           <div className="bg-rose-400 text-white py-3 px-4">
-            <h3 className="font-medium">Observação</h3>
+            <h3 className="font-medium">Mensagem personalizada (Opcional)</h3>
           </div>
           <div className="bg-white py-3 px-4">
             <Textarea
+              placeholder="Ex: Feliz Aniversário Maria!"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
               className="resize-none border-gray-200 w-full"
