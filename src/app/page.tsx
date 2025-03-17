@@ -18,7 +18,6 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("Todos")
   const { toggleFavorite, isFavorite, favorites } = useFavorites()
   const { items, updateQuantity, removeItem, totalPrice } = useCart()
-  const router = useRouter()
 
   // Estados para controlar a visualização de favoritos e pesquisa
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
@@ -44,7 +43,6 @@ export default function Home() {
       )
     })
 
-  const cartItemCount = items.reduce((count, item) => count + item.quantity, 0)
 
   // Alternar visualização de favoritos
   const toggleFavoritesView = () => {
@@ -151,7 +149,7 @@ export default function Home() {
         {/* Título para resultados da pesquisa */}
         {searchQuery && (
           <div className="mt-4 mb-2">
-            <h3 className="text-lg font-medium text-rose-700">Resultados para "{searchQuery}"</h3>
+            <h3 className="text-lg font-medium text-rose-700">Resultados para &quot;{searchQuery}&quot;</h3>
           </div>
         )}
       </div>

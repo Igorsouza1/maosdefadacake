@@ -61,12 +61,6 @@ const cakeCoberturaPiscina: ProductOption[] = [
   { id: "maracuja", name: "Mousse de Maracujá", price: 0 },
 ]
 
-const cakeSizeOptions: ProductOption[] = [
-  { id: "small", name: "Pequeno (15cm)", price: -10 },
-  { id: "medium", name: "Médio (20cm)", price: 0 },
-  { id: "large", name: "Grande (25cm)", price: 20 },
-  { id: "xlarge", name: "Extra Grande (30cm)", price: 40 },
-]
 
 const cakesizeRedondo: ProductOption[] = [
   { id: "17", name: "17cm (13 a 15 Fatias)", price: 110 },

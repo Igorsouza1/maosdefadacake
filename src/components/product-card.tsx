@@ -23,7 +23,6 @@ export function ProductCard({
   price,
   imageUrl,
   description,
-  onAddToCart,
   onToggleFavorite,
   isFavorite,
 }: ProductCardProps) {

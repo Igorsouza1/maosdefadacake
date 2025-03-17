@@ -136,7 +136,7 @@ export function CartSheet({ cart, onUpdateQuantity, onRemoveItem, onCheckout }: 
                           {item.customMessage && (
                             <div className="mt-2 text-sm text-gray-700">
                               <span className="w-2 h-2 bg-rose-500 rounded-full mr-2 inline-block"></span>
-                              <span className="italic">"{item.customMessage}"</span>
+                              <span className="italic">&quot;{item.customMessage}&quot;</span>
                             </div>
                           )}
                         </div>
