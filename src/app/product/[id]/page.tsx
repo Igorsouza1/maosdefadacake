@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { getProductById } from "@/data/products"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Heart } from "lucide-react"
+import { ArrowLeft, Heart, Truck, Gift } from "lucide-react"
 import Image from "next/image"
 import { toast } from "sonner"
 import { useFavorites } from "@/hooks/use-favorites"
@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { OrderFooter } from "@/components/order-footer"
+import { QuantitySelector } from "@/components/quantity-selector"
 
 export default function ProductPage() {
   const params = useParams()
@@ -22,6 +23,7 @@ export default function ProductPage() {
   const [customMessage, setCustomMessage] = useState("")
   const [customizations, setCustomizations] = useState<Record<string, string | string[]>>({})
   const [totalPrice, setTotalPrice] = useState(0)
+  const [quantity, setQuantity] = useState(1) // Estado para a quantidade
 
   // Estado para controlar a quantidade de recheios selecionados
   const [selectedFillings, setSelectedFillings] = useState({
@@ -68,6 +70,18 @@ export default function ProductPage() {
 
     // Verificar outras opções obrigatórias
     const missingRequired = product.customizationOptions.filter((option) => {
+      // Pular opções que dependem de outras seleções
+      if (option.dependsOn) {
+        const dependencyType = option.dependsOn.type
+        const dependencyValue = option.dependsOn.value
+        const currentValue = customizations[dependencyType] as string
+
+        // Se a dependência não for satisfeita, não é obrigatório
+        if (currentValue !== dependencyValue) {
+          return false
+        }
+      }
+
       if (option.type === "simpleFilling" || option.type === "gourmetFilling") {
         // Verificar se pelo menos um recheio foi selecionado
         return totalSelectedFillings === 0
@@ -83,6 +97,41 @@ export default function ProductPage() {
     return missingRequired.length === 0
   }, [product, customizations, totalSelectedFillings, fillingLayers])
 
+  // Adicionar verificação para entrega gratuita e topper gratuito baseado no tamanho selecionado
+  // Verificar se o produto tem entrega gratuita com base no tamanho selecionado
+  const hasFreeDelivery = useMemo(() => {
+    // Bolo Aquário sempre tem entrega gratuita
+    if (product?.id === "9") return true
+
+    // Bolo de Andar tem entrega gratuita apenas para 3 andares
+    if (product?.id === "4") {
+      const selectedSize = customizations["cakeSize"] as string
+      return selectedSize === "tresandares" // ID do tamanho de 3 andares
+    }
+
+    return false
+  }, [product?.id, customizations])
+
+  // Verificar se o produto tem topper gratuito com base no tamanho selecionado
+  const hasFreeTopper = useMemo(() => {
+    // Bolo de Andar tem topper gratuito apenas para 3 andares
+    if (product?.id === "4") {
+      const selectedSize = customizations["cakeSize"] as string
+      return selectedSize === "tresandares" // ID do tamanho de 3 andares
+    }
+
+    return false
+  }, [product?.id, customizations])
+
+  // Inicializar a quantidade com base na configuração do produto
+  useEffect(() => {
+    if (product?.quantityConfig) {
+      setQuantity(product.quantityConfig.defaultQuantity || product.quantityConfig.minQuantity)
+    } else {
+      setQuantity(1)
+    }
+  }, [product])
+
   useEffect(() => {
     if (product) {
       if (product.customizationOptions) {
@@ -93,7 +142,8 @@ export default function ProductPage() {
             option.required &&
             !option.multiple &&
             option.type !== "simpleFilling" &&
-            option.type !== "gourmetFilling"
+            option.type !== "gourmetFilling" &&
+            !option.dependsOn // Não inicializar opções que dependem de outras
           ) {
             initialSelections[option.type] = option.options[0].id
           } else if (option.multiple && option.type !== "simpleFilling" && option.type !== "gourmetFilling") {
@@ -137,8 +187,25 @@ export default function ProductPage() {
 
       // Adicionar preço das outras customizações (exceto tamanho)
       product.customizationOptions.forEach((option) => {
+        // Pular opções que dependem de outras seleções e não estão ativas
+        if (option.dependsOn) {
+          const dependencyType = option.dependsOn.type
+          const dependencyValue = option.dependsOn.value
+          const currentValue = customizations[dependencyType] as string
+
+          // Se a dependência não for satisfeita, pular esta opção
+          if (currentValue !== dependencyValue) {
+            return
+          }
+        }
+
         // Pulamos a opção de tamanho, pois já foi tratada acima
         if (option.type !== "cakeSize" && option.type !== "simpleFilling" && option.type !== "gourmetFilling") {
+          // Se for topper e o produto tem topper gratuito, não adicionar ao preço
+          if (option.type === "topper" && hasFreeTopper) {
+            return
+          }
+
           if (option.multiple) {
             // Para opções múltiplas (checkboxes)
             const selectedValues = (customizations[option.type] as string[]) || []
@@ -187,8 +254,10 @@ export default function ProductPage() {
       })
     }
 
-    setTotalPrice(basePrice + additionalPrice)
-  }, [product, customizations, selectedFillings])
+    // Multiplicar pelo quantidade
+    const itemPrice = basePrice + additionalPrice
+    setTotalPrice(itemPrice * quantity)
+  }, [product, customizations, selectedFillings, quantity, hasFreeTopper])
 
   if (!product) {
     return (
@@ -245,6 +314,18 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     // Verificar se todas as opções obrigatórias foram selecionadas
     const missingRequired = product.customizationOptions?.filter((option) => {
+      // Pular opções que dependem de outras seleções
+      if (option.dependsOn) {
+        const dependencyType = option.dependsOn.type
+        const dependencyValue = option.dependsOn.value
+        const currentValue = customizations[dependencyType] as string
+
+        // Se a dependência não for satisfeita, não é obrigatório
+        if (currentValue !== dependencyValue) {
+          return false
+        }
+      }
+
       if (option.type === "simpleFilling" || option.type === "gourmetFilling") {
         // Verificar se pelo menos um recheio foi selecionado
         return totalSelectedFillings === 0
@@ -280,6 +361,18 @@ export default function ProductPage() {
     // Adicionar customizações regulares
     if (product.customizationOptions) {
       product.customizationOptions.forEach((option) => {
+        // Pular opções que dependem de outras seleções e não estão ativas
+        if (option.dependsOn) {
+          const dependencyType = option.dependsOn.type
+          const dependencyValue = option.dependsOn.value
+          const currentValue = customizations[dependencyType] as string
+
+          // Se a dependência não for satisfeita, pular esta opção
+          if (currentValue !== dependencyValue) {
+            return
+          }
+        }
+
         if (option.type !== "simpleFilling" && option.type !== "gourmetFilling") {
           if (option.multiple) {
             // Para opções múltiplas (checkboxes)
@@ -356,10 +449,12 @@ export default function ProductPage() {
         description: product.description,
         imageUrl: product.imageUrl,
       },
-      quantity: 1,
+      quantity: quantity, // Usar a quantidade selecionada
       customizations: cartCustomizations,
       customMessage: customMessage || undefined,
-      totalPrice: totalPrice,
+      totalPrice: totalPrice / quantity, // Preço unitário
+      hasFreeDelivery: hasFreeDelivery, // Adicionar informação de entrega gratuita
+      hasFreeTopper: hasFreeTopper, // Adicionar informação de topper gratuito
     })
 
     // Redirecionar para a página inicial
@@ -371,6 +466,18 @@ export default function ProductPage() {
     if (!product.customizationOptions) return null
 
     return product.customizationOptions.map((option) => {
+      // Verificar se a opção depende de outra seleção
+      if (option.dependsOn) {
+        const dependencyType = option.dependsOn.type
+        const dependencyValue = option.dependsOn.value
+        const currentValue = customizations[dependencyType] as string
+
+        // Se a dependência não for satisfeita, não mostrar esta opção
+        if (currentValue !== dependencyValue) {
+          return null
+        }
+      }
+
       // Renderização especial para recheios
       if (option.type === "simpleFilling" || option.type === "gourmetFilling") {
         const isSimple = option.type === "simpleFilling"
@@ -421,6 +528,41 @@ export default function ProductPage() {
                   )
                 })}
               </div>
+            </div>
+          </div>
+        )
+      }
+
+      // Adicionar renderização especial para topper quando é gratuito
+      if (option.type === "topper" && hasFreeTopper) {
+        return (
+          <div key={option.type} className="mb-0">
+            <div className="bg-rose-400 text-white py-3 px-4 flex justify-between items-center">
+              <div>
+                <h3 className="font-medium">{option.label}</h3>
+                {option.required && <p className="text-sm opacity-90">Escolha 1 opção</p>}
+              </div>
+              <Badge variant="secondary" className="bg-white text-rose-500">
+                Grátis
+              </Badge>
+            </div>
+
+            <div className="bg-white w-full">
+              <RadioGroup
+                value={(customizations[option.type] as string) || ""}
+                onValueChange={(value) => handleCustomizationChange(option.type, value)}
+                className="w-full divide-y divide-gray-100"
+              >
+                {option.options.map((item) => (
+                  <div key={item.id} className="flex items-center justify-between py-3 px-4 w-full">
+                    <label htmlFor={`${option.type}-${item.id}`} className="font-medium text-gray-800">
+                      {item.name}
+                      <span className="ml-2 text-sm text-green-600">Grátis</span>
+                    </label>
+                    <RadioGroupItem value={item.id} id={`${option.type}-${item.id}`} className="text-rose-500" />
+                  </div>
+                ))}
+              </RadioGroup>
             </div>
           </div>
         )
@@ -517,6 +659,22 @@ export default function ProductPage() {
         >
           <ArrowLeft className="w-5 h-5 text-gray-700" />
         </Button>
+
+        {/* Badges para entrega gratuita e topper gratuito */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
+          {hasFreeDelivery && (
+            <Badge className="bg-rose-500 text-white px-3 py-1 flex items-center gap-1">
+              <Truck className="w-3 h-3" />
+              <span>Entrega Grátis</span>
+            </Badge>
+          )}
+          {hasFreeTopper && (
+            <Badge className="bg-rose-500 text-white px-3 py-1 flex items-center gap-1">
+              <Gift className="w-3 h-3" />
+              <span>Topper Grátis</span>
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Informações do produto */}
@@ -525,6 +683,17 @@ export default function ProductPage() {
           <div>
             <h1 className="text-2xl font-bold text-rose-800">{product.name}</h1>
             <p className="text-gray-600 text-sm mt-1">{product.description}</p>
+
+            {/* Informações sobre benefícios para bolo de andar */}
+            {product.id === "4" && (
+              <div className="mt-2 text-sm">
+                <p className="text-rose-600 font-medium">Benefícios especiais para bolo de 3 andares:</p>
+                <ul className="list-disc list-inside text-gray-600 ml-2">
+                  <li>Entrega gratuita</li>
+                  <li>Topper gratuito</li>
+                </ul>
+              </div>
+            )}
           </div>
           <Button
             variant="ghost"
@@ -536,6 +705,27 @@ export default function ProductPage() {
           </Button>
         </div>
       </div>
+
+      {/* Bloco de seleção de quantidade (apenas para produtos com quantityConfig) */}
+      {product.quantityConfig && (
+        <div className="mb-0">
+          <div className="bg-rose-400 text-white py-3 px-4">
+            <h3 className="font-medium">Quantidade</h3>
+            <p className="text-sm opacity-90">
+              Mínimo: {product.quantityConfig.minQuantity} {product.category === "Cupcake" ? "unidades" : "unidades"}
+            </p>
+          </div>
+          <div className="bg-white w-full py-3 px-4 flex justify-between items-center">
+            <span className="font-medium text-gray-800">Selecione a quantidade</span>
+            <QuantitySelector
+              minQuantity={product.quantityConfig.minQuantity}
+              maxQuantity={product.quantityConfig.maxQuantity}
+              defaultQuantity={product.quantityConfig.defaultQuantity || product.quantityConfig.minQuantity}
+              onChange={setQuantity}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Opções de personalização */}
       <div className="w-full">

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { format, addDays } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { CalendarIcon, ChevronDown, MapPin, Store } from "lucide-react"
+import { CalendarIcon, ChevronDown, MapPin, Store, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -14,20 +14,28 @@ import { useCart } from "@/context/cart-context"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { AddressDialog, type Address } from "@/components/address-dialog"
+import { Badge } from "@/components/ui/badge"
 
 const DELIVERY_FEE = 20.0
 const WHATSAPP_NUMBER = "5567992408191" // Substitua pelo número real da loja
 
 // Horários disponíveis para entrega
-const DELIVERY_HOURS = ["13:00", "17:30", "18:00", "19:00"]
+const DELIVERY_HOURS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"]
 
 // Horários disponíveis para retirada na loja
 const PICKUP_HOURS = [
+  "09:00",
+  "10:00",
   "11:00",
   "12:00",
+  "13:00",
+  "14:00",
   "15:00",
+  "16:00",
+  "17:00",
   "18:00",
   "19:00",
+  "20:00",
 ]
 
 const ADDRESS_STORAGE_KEY = "user-delivery-address"
@@ -41,6 +49,11 @@ export default function CheckoutPage() {
   const [timeOpen, setTimeOpen] = useState(false)
   const [address, setAddress] = useState<Address | null>(null)
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
+
+  // Verificar se algum produto tem entrega gratuita
+  const hasFreeDelivery = useMemo(() => {
+    return items.some((item) => item.hasFreeDelivery)
+  }, [items])
 
   // Horários disponíveis com base no tipo de entrega
   const availableHours = useMemo(() => {
@@ -72,6 +85,14 @@ export default function CheckoutPage() {
     localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(newAddress))
     toast.success("Endereço salvo com sucesso!")
   }
+
+  // Calcular a taxa de entrega (0 se tiver entrega gratuita)
+  const deliveryFee = useMemo(() => {
+    if (deliveryType === "pickup" || hasFreeDelivery) {
+      return 0
+    }
+    return DELIVERY_FEE
+  }, [deliveryType, hasFreeDelivery])
 
   const formatWhatsAppMessage = () => {
     if (!date || !time) return ""
@@ -129,14 +150,22 @@ export default function CheckoutPage() {
         message += `*Mensagem:* "${item.customMessage}"\n`
       }
 
+      // Informações de entrega gratuita ou topper gratuito
+      if (item.hasFreeDelivery) {
+        message += `*Entrega:* Grátis\n`
+      }
+      if (item.hasFreeTopper) {
+        message += `*Topper:* Grátis\n`
+      }
+
       message += `\n`
     })
 
     // Resumo de valores
     message += `*RESUMO DE VALORES:*\n`
     message += `Subtotal: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`
-    message += `Taxa de entrega: ${deliveryType === "delivery" ? `R$ ${DELIVERY_FEE.toFixed(2).replace(".", ",")}` : "Grátis"}\n`
-    message += `*Total: R$ ${(totalPrice + (deliveryType === "delivery" ? DELIVERY_FEE : 0)).toFixed(2).replace(".", ",")}`
+    message += `Taxa de entrega: ${deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}\n`
+    message += `*Total: R$ ${(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}`
 
     return encodeURIComponent(message)
   }
@@ -253,7 +282,15 @@ export default function CheckoutPage() {
               )}
             >
               <div className="flex-1">
-                <p className="font-medium text-rose-600">Entrega</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-rose-600">Entrega</p>
+                  {hasFreeDelivery && (
+                    <Badge className="bg-rose-500 text-white px-2 py-0.5 text-xs flex items-center gap-1">
+                      <Truck className="w-3 h-3" />
+                      <span>Grátis</span>
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-sm text-gray-500">Entrega no endereço informado</p>
               </div>
               <RadioGroupItem value="delivery" className="text-rose-500" />
@@ -359,16 +396,19 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Taxa de Entrega</span>
-              <span className="font-medium">
-                {deliveryType === "delivery" ? `R$ ${DELIVERY_FEE.toFixed(2).replace(".", ",")}` : "Grátis"}
-              </span>
+              <div className="flex items-center gap-2">
+                {hasFreeDelivery && deliveryType === "delivery" && (
+                  <Badge className="bg-rose-500 text-white px-2 py-0.5 text-xs">Grátis</Badge>
+                )}
+                <span className="font-medium">
+                  {deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}
+                </span>
+              </div>
             </div>
             <Separator className="my-2" />
             <div className="flex justify-between text-base font-semibold">
               <span>Total</span>
-              <span className="text-rose-700">
-                R$ {(totalPrice + (deliveryType === "delivery" ? DELIVERY_FEE : 0)).toFixed(2).replace(".", ",")}
-              </span>
+              <span className="text-rose-700">R$ {(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}</span>
             </div>
           </div>
         </div>
@@ -378,9 +418,7 @@ export default function CheckoutPage() {
       <div className="fixed bottom-0 left-0 right-0 bg-rose-700 text-white p-4 flex justify-between items-center">
         <div>
           <p className="text-sm opacity-90">Total do Pedido</p>
-          <p className="font-bold text-xl">
-            R$ {(totalPrice + (deliveryType === "delivery" ? DELIVERY_FEE : 0)).toFixed(2).replace(".", ",")}
-          </p>
+          <p className="font-bold text-xl">R$ {(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}</p>
         </div>
         <Button className="bg-white text-rose-700 hover:bg-gray-100 px-6" onClick={handleFinishOrder}>
           Finalizar Pedido

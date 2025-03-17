@@ -23,6 +23,8 @@ export interface CartItem {
   customizations: CartItemCustomization[]
   customMessage?: string
   totalPrice: number
+  hasFreeDelivery?: boolean
+  hasFreeTopper?: boolean
 }
 
 interface CartContextType {
