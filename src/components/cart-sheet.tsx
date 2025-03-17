@@ -16,7 +16,7 @@ interface CartSheetProps {
   onCheckout: () => void
 }
 
-export function CartSheet({ cart, onUpdateQuantity, onRemoveItem, onCheckout }: CartSheetProps) {
+export function CartSheet({ cart, onUpdateQuantity, onRemoveItem }: CartSheetProps) {
   const router = useRouter()
   const cartTotal = cart.reduce((total, item) => total + item.totalPrice * item.quantity, 0)
   const itemCount = cart.reduce((count, item) => count + item.quantity, 0)
