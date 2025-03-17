@@ -30,6 +30,23 @@ const cakeBaseOptions: ProductOption[] = [
   { id: "paodelo", name: "Pão de ló", price: 0 },
 ]
 
+const cakeBaseAndar: ProductOption[] = [
+  { id: "amanteigada", name: "Amanteigada", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+]
+
+const cakeBasePiscina: ProductOption[] = [
+  { id: "cenoura", name: "Cenoura", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "baunilha", name: "Baunilha", price: 0 },
+]
+
+const cakeCoberturaPiscina: ProductOption[] = [
+  { id: "leiteninho", name: "Leite Ninho", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "maracuja", name: "Mousse de Maracujá", price: 0 },
+]
+
 const cakeSizeOptions: ProductOption[] = [
   { id: "small", name: "Pequeno (15cm)", price: -10 },
   { id: "medium", name: "Médio (20cm)", price: 0 },
@@ -44,6 +61,31 @@ const cakesizeRedondo: ProductOption[] = [
   { id: "28", name: "28cm (40 a 45 Fatias)", price: 270 },
   { id: "33", name: "33cm (45 a 50 Fatias)", price: 300 },
   { id: "40", name: "40cm (60 a 65 Fatias)", price: 320 },
+]
+
+const cakeSizeRetangular: ProductOption[] = [
+  { id: "small", name: "25x20cm (20 a 25 fatias)", price: 200 },
+  { id: "medium", name: "33x25 (30 a 35 fatias", price: 300 },
+  { id: "large", name: "40x25 (40 a 45 fatias)", price: 350 },
+]
+
+const cakeSizeMetro: ProductOption[] = [
+  { id: "meiometro", name: "Meio Metro (100 a 110 fatias", price: 600 },
+  { id: "ummetro", name: "Um metro (200 fatias)", price: 900 },
+]
+
+const cakeSizeAndar: ProductOption[] = [
+  { id: "doisandares", name: "2 Andares (65 a 70 fatias", price: 450 },
+  { id: "tresandares", name: "3 Andares (100 Fatias)", price: 750 },
+]
+
+const cakeSizeAcetato: ProductOption[] = [
+  { id: "17", name: "17cm (13 a 15 fatias)", price: 110 },
+  { id: "23", name: "23cm (23 a 25 fatias)", price: 180 },
+  { id: "25", name: "25cm (25 a 30 fatias)", price: 200 },
+  { id: "28", name: "28cm (40 a 45 fatias)", price: 270 },
+  { id: "33", name: "33cm (45 a 50 fatias)", price: 300 },
+  { id: "40", name: "40cm (60 a 65 fatias)", price: 320 },
 ]
 
 const fillingLayersOptions: ProductOption[] = [
@@ -79,6 +121,11 @@ const topperOptions: ProductOption[] = [
   { id: "none", name: "Sem Topper", price: 0 },
   { id: "simple", name: "Topper Simples", price: 20 },
   { id: "3d", name: "Topper 3D", price: 35 },
+]
+
+const topperAndar: ProductOption[] = [
+  { id: "simple", name: "Topper Simples (Gratuito)", price: 0 },
+  { id: "3d", name: "Topper 3D (Gratuito)", price: 0 },
 ]
 
 const additionalOptions: ProductOption[] = [
@@ -157,6 +204,12 @@ export const products: Product[] = [
         options: cakeBaseOptions,
       },
       {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeRetangular,
+      },
+      {
         type: "fillingLayers",
         label: "Quantidade de Recheio",
         required: true,
@@ -203,6 +256,19 @@ export const products: Product[] = [
         options: cakeBaseOptions,
       },
       {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeMetro,
+      },
+      
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
+      },
+      {
         type: "simpleFilling",
         label: "Escolha de Recheio Simples",
         required: true,
@@ -234,8 +300,23 @@ export const products: Product[] = [
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: cakeBaseOptions,
+        options: cakeBaseAndar,
       },
+      
+      {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeAndar,
+      },
+      
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
+      },
+      
       {
         type: "simpleFilling",
         label: "Escolha de Recheio Simples",
@@ -251,7 +332,7 @@ export const products: Product[] = [
         type: "topper",
         label: "Topper",
         required: true,
-        options: topperOptions,
+        options: topperAndar,
       },
       {
         type: "additional",
@@ -281,6 +362,13 @@ export const products: Product[] = [
         required: true,
         options: cakeSizeOptions,
       },
+      
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
+      },
       {
         type: "simpleFilling",
         label: "Escolha de Recheio Simples",
@@ -291,6 +379,12 @@ export const products: Product[] = [
         type: "gourmetFilling",
         label: "Escolha de Recheio Gourmet (Opcional)",
         options: gourmetFillingOptions,
+      },
+      {
+        type: "additional",
+        label: "Adicionais (Opcional)",
+        multiple: true,
+        options: additionalOptions,
       },
     ],
   },
@@ -306,24 +400,15 @@ export const products: Product[] = [
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: cakeBaseOptions,
+        options: cakeBasePiscina,
       },
       {
         type: "simpleFilling",
-        label: "Escolha de Recheio Simples",
+        label: "Escolha de Cobertura",
         required: true,
-        options: simpleFillingOptions,
+        options: cakeCoberturaPiscina,
       },
-      {
-        type: "additional",
-        label: "Adicionais (Opcional)",
-        multiple: true,
-        options: [
-          { id: "candles", name: "Velas", price: 5 },
-          { id: "sparkles", name: "Velas Sparkle", price: 8 },
-          { id: "figures", name: "Bonecos para Piscina", price: 15 },
-        ],
-      },
+      
     ],
   },
   {
