@@ -19,9 +19,9 @@ export function useFavorites() {
   }, [favorites])
 
   const toggleFavorite = (productId: string) => {
-    setFavorites(prev => {
+    setFavorites((prev) => {
       if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId)
+        return prev.filter((id) => id !== productId)
       } else {
         return [...prev, productId]
       }
@@ -34,3 +34,4 @@ export function useFavorites() {
 
   return { favorites, toggleFavorite, isFavorite }
 }
+

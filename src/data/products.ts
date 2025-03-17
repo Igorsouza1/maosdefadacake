@@ -383,7 +383,7 @@ export const products: Product[] = [
         type: "cakeSize",
         label: "Escolha o Tamanho",
         required: true,
-        options: cakeSizeOptions,
+        options: cakeSizeAcetato,
       },
 
       {
@@ -497,15 +497,6 @@ export const products: Product[] = [
           type: "cakeType",
           value: "recheado",
         },
-      },
-      {
-        type: "decoration",
-        label: "Decoração (Opcional)",
-        options: [
-          { id: "sprinkles", name: "Granulado", price: 0.5 },
-          { id: "fruits", name: "Frutas", price: 1 },
-          { id: "chocolate_chips", name: "Gotas de Chocolate", price: 0.5 },
-        ],
       },
     ],
   },

@@ -61,12 +61,19 @@ export default function ProductPage() {
     return Math.max(0, fillingLayers - totalSelectedFillings)
   }, [fillingLayers, totalSelectedFillings])
 
-  // Verificar se todas as opções obrigatórias foram selecionadas
+  // Vamos modificar a função isFormValid para corrigir o problema com o bolo vulcão
+  // Localize a definição da constante isFormValid (por volta da linha 125)
+
   const isFormValid = useMemo(() => {
     if (!product?.customizationOptions) return true
 
     // Verificar se todos os recheios foram selecionados
-    if (totalSelectedFillings < fillingLayers) return false
+    if (
+      totalSelectedFillings < fillingLayers &&
+      product.customizationOptions.some((opt) => opt.type === "simpleFilling" || opt.type === "gourmetFilling")
+    ) {
+      return false
+    }
 
     // Verificar outras opções obrigatórias
     const missingRequired = product.customizationOptions.filter((option) => {
@@ -87,6 +94,7 @@ export default function ProductPage() {
         return totalSelectedFillings === 0
       }
 
+      // Para todas as outras opções, incluindo "filling" do bolo vulcão
       return (
         option.required &&
         (!customizations[option.type] ||
@@ -311,6 +319,9 @@ export default function ProductPage() {
     }
   }
 
+  // Também precisamos modificar a função handleAddToCart para garantir que ela funcione corretamente com o bolo vulcão
+  // Localize a função handleAddToCart (por volta da linha 300)
+
   const handleAddToCart = () => {
     // Verificar se todas as opções obrigatórias foram selecionadas
     const missingRequired = product.customizationOptions?.filter((option) => {
@@ -346,8 +357,11 @@ export default function ProductPage() {
       return
     }
 
-    // Verificar se todos os recheios foram selecionados
-    if (totalSelectedFillings < fillingLayers) {
+    // Verificar se todos os recheios foram selecionados apenas se o produto tiver recheios do tipo simpleFilling/gourmetFilling
+    if (
+      totalSelectedFillings < fillingLayers &&
+      product.customizationOptions?.some((opt) => opt.type === "simpleFilling" || opt.type === "gourmetFilling")
+    ) {
       toast.error(`Por favor, selecione ${fillingLayers} recheio(s)`, {
         description: `Você selecionou ${totalSelectedFillings} de ${fillingLayers} recheios`,
         duration: 3000,
@@ -734,11 +748,10 @@ export default function ProductPage() {
         {/* Mensagem personalizada */}
         <div>
           <div className="bg-rose-400 text-white py-3 px-4">
-            <h3 className="font-medium">Mensagem personalizada (Opcional)</h3>
+            <h3 className="font-medium">Observação</h3>
           </div>
           <div className="bg-white py-3 px-4">
             <Textarea
-              placeholder="Ex: Feliz Aniversário Maria!"
               value={customMessage}
               onChange={(e) => setCustomMessage(e.target.value)}
               className="resize-none border-gray-200 w-full"
