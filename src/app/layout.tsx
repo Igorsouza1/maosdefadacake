@@ -1,7 +1,8 @@
 import type React from "react"
 import { SonnerProvider } from "@/components/sonner-provider"
+import { CartProvider } from "@/context/cart-context"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+import { Inter } from 'next/font/google'
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -19,10 +20,11 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <body className={inter.className}>
-          {children}
-          <SonnerProvider />
+          <CartProvider>
+            {children}
+            <SonnerProvider />
+          </CartProvider>
       </body>
     </html>
   )
 }
-

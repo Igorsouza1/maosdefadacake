@@ -25,11 +25,9 @@ export interface Product {
 
 // Opções de personalização comuns que podem ser reutilizadas
 const cakeBaseOptions: ProductOption[] = [
-  { id: "vanilla", name: "Baunilha", price: 0 },
+  { id: "amanteigada", name: "Amanteigada", price: 0 },
   { id: "chocolate", name: "Chocolate", price: 0 },
-  { id: "redvelvet", name: "Red Velvet", price: 5 },
-  { id: "carrot", name: "Cenoura", price: 0 },
-  { id: "lemon", name: "Limão", price: 0 },
+  { id: "paodelo", name: "Pão de ló", price: 0 },
 ]
 
 const cakeSizeOptions: ProductOption[] = [
@@ -39,39 +37,56 @@ const cakeSizeOptions: ProductOption[] = [
   { id: "xlarge", name: "Extra Grande (30cm)", price: 40 },
 ]
 
+const cakesizeRedondo: ProductOption[] = [
+  { id: "17", name: "17cm (13 a 15 Fatias)", price: 110 },
+  { id: "23", name: "23cm (23 a 25 Fatias)", price: 180 },
+  { id: "25", name: "25cm (25 a 30 Fatias)", price: 200 },
+  { id: "28", name: "28cm (40 a 45 Fatias)", price: 270 },
+  { id: "33", name: "33cm (45 a 50 Fatias)", price: 300 },
+  { id: "40", name: "40cm (60 a 65 Fatias)", price: 320 },
+]
+
 const fillingLayersOptions: ProductOption[] = [
   { id: "one", name: "1 Camada", price: 0 },
-  { id: "two", name: "2 Camadas", price: 15 },
+  { id: "two", name: "2 Camadas", price: 10 },
 ]
 
 const simpleFillingOptions: ProductOption[] = [
-  { id: "chocolate", name: "Chocolate", price: 0 },
-  { id: "dulcedeleche", name: "Doce de Leite", price: 0 },
-  { id: "strawberry", name: "Morango", price: 0 },
+  { id: "4leites", name: "4 Leites", price: 0 },
   { id: "brigadeiro", name: "Brigadeiro", price: 0 },
-  { id: "coconut", name: "Coco", price: 0 },
+  { id: "leiteninho", name: "Leite Ninho", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "morangoaoleite", name: "Morango ao Leite", price: 0 },
+  { id: "maracujaaoleite", name: "Moracujá ao Leite", price: 0 },
 ]
 
 const gourmetFillingOptions: ProductOption[] = [
-  { id: "nutella", name: "Nutella", price: 10 },
-  { id: "ferrero", name: "Ferrero Rocher", price: 15 },
-  { id: "kitkat", name: "Kit Kat", price: 8 },
-  { id: "oreo", name: "Oreo", price: 8 },
-  { id: "redfruits", name: "Frutas Vermelhas", price: 12 },
+  { id: "4leitescomabacaxi", name: "4 Leites com Abacaxi", price: 20 },
+  { id: "brigadeirotradicional", name: "Brigadeiro Tradicional com Morango Fresco", price: 25 },
+  { id: "leiteninhomorango", name: "Leite Ninho com Morango Fresco", price: 25 },
+  { id: "doceleiteameixa", name: "Doce de leite com Ameixa", price: 30 },
+  { id: "prestigio", name: "Prestígio", price: 20 },
+  { id: "leiteninhonutella", name: "Leite Ninho com Nutella", price: 25 },
+  { id: "nozes", name: "Nozes", price: 25 },
+  { id: "recheiobombom", name: "Recheio de Bombom", price: 30 },
+  { id: "ganachemeioamargo", name: "Ganache Meio Amargo", price: 30 },
+  { id: "ferreroroche", name: "Ferrero Roche", price: 30 },
+  { id: "ganache", name: "Ganache", price: 30 },
+  { id: "ourobranco", name: "Ouro Branco", price: 20 },
 ]
 
 const topperOptions: ProductOption[] = [
   { id: "none", name: "Sem Topper", price: 0 },
-  { id: "simple", name: "Topper Simples", price: 10 },
-  { id: "3d", name: "Topper 3D", price: 25 },
+  { id: "simple", name: "Topper Simples", price: 20 },
+  { id: "3d", name: "Topper 3D", price: 35 },
 ]
 
 const additionalOptions: ProductOption[] = [
-  { id: "candles", name: "Velas", price: 5 },
-  { id: "sparkles", name: "Velas Sparkle", price: 8 },
-  { id: "fruits", name: "Frutas Frescas", price: 12 },
-  { id: "chocolates", name: "Chocolates Decorativos", price: 15 },
-  { id: "flowers", name: "Flores Comestíveis", price: 20 },
+  { id: "perolas", name: "Pérolas", price: 10 },
+  { id: "brigadeiros", name: "Brigadeiros", price: 20 },
+  { id: "morangos", name: "Morangos", price: 20 },
+  { id: "glitter", name: "Glitter", price: 20 },
+  { id: "brilho", name: "Brilho", price: 20 },
 ]
 
 export const products: Product[] = [
@@ -94,7 +109,7 @@ export const products: Product[] = [
         type: "cakeSize",
         label: "Escolha o Tamanho",
         required: true,
-        options: cakeSizeOptions,
+        options: cakesizeRedondo,
       },
       {
         type: "fillingLayers",

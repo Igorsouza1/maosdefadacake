@@ -16,7 +16,7 @@ export function ShopHeader({ name, rating, imageUrl, logoUrl }: ShopHeaderProps)
   const hasHalfStar = rating % 1 >= 0.5
 
   return (
-    <div className="relative z-20">
+    <div className="relative">
       {/* Background Image */}
       <div className="w-full h-48 relative overflow-hidden">
         <Image
@@ -61,7 +61,7 @@ export function ShopHeader({ name, rating, imageUrl, logoUrl }: ShopHeaderProps)
                 </Badge>
               </div>
               <p className="text-gray-500 text-sm mt-2 text-center">
-                R. Barão de Melgaço, 773 - Universitário, Corumbá - MS
+              R. Barão de Melgaço, 773 - Universitário, Corumbá - MS
               </p>
             </div>
           </CardContent>
