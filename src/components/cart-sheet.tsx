@@ -1,9 +1,10 @@
 "use client"
 
-import { ShoppingBag, Minus, Plus, Trash2 } from "lucide-react"
+import { ShoppingBag, Minus, Plus, Trash2, Truck } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet"
 import { Separator } from "@/components/ui/separator"
+import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import type { CartItem } from "@/context/cart-context"
 import { useRouter } from "next/navigation"
@@ -19,7 +20,11 @@ export function CartSheet({ cart, onUpdateQuantity, onRemoveItem, onCheckout }: 
   const router = useRouter()
   const cartTotal = cart.reduce((total, item) => total + item.totalPrice * item.quantity, 0)
   const itemCount = cart.reduce((count, item) => count + item.quantity, 0)
-  const deliveryFee = cartTotal > 0 ? 15 : 0
+
+  // Verificar se algum item tem entrega gratuita
+  const hasFreeDelivery = cart.some((item) => item.hasFreeDelivery)
+  // Calcular a taxa de entrega (0 se algum item tiver entrega gratuita)
+  const deliveryFee = cartTotal > 0 && !hasFreeDelivery ? 20 : 0
 
   // Agrupar itens por ID do produto e customizações
   const groupedCart: CartItem[] = []
@@ -99,6 +104,14 @@ export function CartSheet({ cart, onUpdateQuantity, onRemoveItem, onCheckout }: 
                             {item.product.description?.substring(0, 30)}...
                           </p>
                           <p className="font-semibold mt-1">R$ {item.totalPrice.toFixed(2).replace(".", ",")}</p>
+
+                          {/* Mostrar badge de entrega gratuita se aplicável */}
+                          {item.hasFreeDelivery && (
+                            <Badge className="mt-1 bg-rose-500 text-white px-2 py-0.5 text-xs flex items-center gap-1 w-fit">
+                              <Truck className="w-3 h-3" />
+                              <span>Entrega Grátis</span>
+                            </Badge>
+                          )}
                         </div>
                       </div>
 
@@ -182,7 +195,13 @@ export function CartSheet({ cart, onUpdateQuantity, onRemoveItem, onCheckout }: 
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Taxa de Entrega</span>
-                      <span className="font-medium">R$ {deliveryFee.toFixed(2).replace(".", ",")}</span>
+                      <div className="flex items-center gap-2">
+                        {hasFreeDelivery ? (
+                          <Badge className="bg-rose-500 text-white px-2 py-0.5 text-xs">Grátis</Badge>
+                        ) : (
+                          <span className="font-medium">R$ {deliveryFee.toFixed(2).replace(".", ",")}</span>
+                        )}
+                      </div>
                     </div>
                     <Separator className="my-2" />
                     <div className="flex justify-between text-base font-semibold">

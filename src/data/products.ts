@@ -355,7 +355,7 @@ export const products: Product[] = [
         type: "topper",
         label: "Topper (Gratuito)",
         required: true,
-        options: topperAndar,
+        options: topperOptions,
       },
       {
         type: "additional",
