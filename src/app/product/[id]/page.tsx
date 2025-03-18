@@ -715,7 +715,11 @@ export default function ProductPage() {
             variant="ghost"
             size="icon"
             className={`${isFavorite(product.id) ? "text-rose-500" : "text-gray-400"}`}
-            onClick={() => toggleFavorite(product.id)}
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                toggleFavorite(product.id)
+              }
+            }}
           >
             <Heart className={`w-6 h-6 ${isFavorite(product.id) ? "fill-rose-500" : ""}`} />
           </Button>

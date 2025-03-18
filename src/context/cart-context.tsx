@@ -44,19 +44,23 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Carregar carrinho do localStorage quando o componente montar
   useEffect(() => {
-    const storedCart = localStorage.getItem("cart")
-    if (storedCart) {
-      try {
-        setItems(JSON.parse(storedCart))
-      } catch (error) {
-        console.error("Erro ao carregar carrinho:", error)
+    if (typeof window !== "undefined") {
+      const storedCart = localStorage.getItem("cart")
+      if (storedCart) {
+        try {
+          setItems(JSON.parse(storedCart))
+        } catch (error) {
+          console.error("Erro ao carregar carrinho:", error)
+        }
       }
     }
   }, [])
 
   // Salvar carrinho no localStorage quando mudar
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cart", JSON.stringify(items))
+    }
   }, [items])
 
   // Adicionar item ao carrinho
@@ -105,10 +109,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     })
 
-    toast.success(`${newItem.product.name} adicionado à sacola`, {
-      description: "Produto adicionado com sucesso!",
-      duration: 3000,
-    })
+    if (typeof window !== "undefined") {
+      toast.success(`${newItem.product.name} adicionado à sacola`, {
+        description: "Produto adicionado com sucesso!",
+        duration: 3000,
+      })
+    }
   }
 
   // Atualizar quantidade de um item
