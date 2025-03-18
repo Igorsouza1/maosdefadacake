@@ -1,7 +1,5 @@
 "use client"
 
-export const runtime = "nodejs"
-
 import { useState, useEffect, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { getProductById } from "@/data/products"
@@ -17,8 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { OrderFooter } from "@/components/order-footer"
 import { QuantitySelector } from "@/components/quantity-selector"
 
-
-
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
@@ -27,7 +23,9 @@ export default function ProductPage() {
   const [customMessage, setCustomMessage] = useState("")
   const [customizations, setCustomizations] = useState<Record<string, string | string[]>>({})
   const [totalPrice, setTotalPrice] = useState(0)
-  const [quantity, setQuantity] = useState(1) // Estado para a quantidade
+  const [quantity, setQuantity] = useState(1)
+  const [product, setProduct] = useState<ReturnType<typeof getProductById> | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Estado para controlar a quantidade de recheios selecionados
   const [selectedFillings, setSelectedFillings] = useState({
@@ -35,8 +33,15 @@ export default function ProductPage() {
     gourmet: [] as string[],
   })
 
-  const productId = params.id as string
-  const product = getProductById(productId)
+  // Carregar o produto apenas no lado do cliente
+  useEffect(() => {
+    if (typeof window !== "undefined" && params.id) {
+      const productId = params.id as string
+      const loadedProduct = getProductById(productId)
+      setProduct(loadedProduct)
+      setIsLoading(false)
+    }
+  }, [params.id])
 
   // Determinar o número total de camadas de recheio permitidas
   const fillingLayers = useMemo(() => {
@@ -64,9 +69,6 @@ export default function ProductPage() {
   const remainingFillings = useMemo(() => {
     return Math.max(0, fillingLayers - totalSelectedFillings)
   }, [fillingLayers, totalSelectedFillings])
-
-  // Vamos modificar a função isFormValid para corrigir o problema com o bolo vulcão
-  // Localize a definição da constante isFormValid (por volta da linha 125)
 
   const isFormValid = useMemo(() => {
     if (!product?.customizationOptions) return true
@@ -271,6 +273,19 @@ export default function ProductPage() {
     setTotalPrice(itemPrice * quantity)
   }, [product, customizations, selectedFillings, quantity, hasFreeTopper])
 
+  // Mostrar tela de carregamento enquanto o produto está sendo carregado
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="animate-pulse">
+          <div className="h-8 w-48 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 w-32 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // Mostrar mensagem de erro se o produto não for encontrado
   if (!product) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
@@ -322,9 +337,6 @@ export default function ProductPage() {
       return true
     }
   }
-
-  // Também precisamos modificar a função handleAddToCart para garantir que ela funcione corretamente com o bolo vulcão
-  // Localize a função handleAddToCart (por volta da linha 300)
 
   const handleAddToCart = () => {
     // Verificar se todas as opções obrigatórias foram selecionadas
