@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { OrderFooter } from "@/components/order-footer"
 import { QuantitySelector } from "@/components/quantity-selector"
 
-export const runtime = "edge"
 
 export default function ProductPage() {
   const params = useParams()
