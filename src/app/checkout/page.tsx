@@ -16,28 +16,19 @@ import { cn } from "@/lib/utils"
 import { AddressDialog, type Address } from "@/components/address-dialog"
 import { Badge } from "@/components/ui/badge"
 
-export const runtime = "edge"
-
 const DELIVERY_FEE = 20.0
-const WHATSAPP_NUMBER = "5567992408191" // Substitua pelo número real da loja
+const WHATSAPP_NUMBER = "5567996184308" // Substitua pelo número real da loja
 
 // Horários disponíveis para entrega
-const DELIVERY_HOURS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"]
+const DELIVERY_HOURS = [ "13:30","17:30", "18:00", "19:00"]
 
 // Horários disponíveis para retirada na loja
 const PICKUP_HOURS = [
-  "09:00",
-  "10:00",
   "11:00",
   "12:00",
-  "13:00",
-  "14:00",
   "15:00",
-  "16:00",
-  "17:00",
   "18:00",
   "19:00",
-  "20:00",
 ]
 
 const ADDRESS_STORAGE_KEY = "user-delivery-address"
@@ -69,15 +60,12 @@ export default function CheckoutPage() {
 
   // Carregar endereço do localStorage quando o componente montar
   useEffect(() => {
-    // Garantir que o código só execute no navegador
-    if (typeof window !== "undefined") {
-      const storedAddress = localStorage.getItem(ADDRESS_STORAGE_KEY)
-      if (storedAddress) {
-        try {
-          setAddress(JSON.parse(storedAddress))
-        } catch (error) {
-          console.error("Erro ao carregar endereço:", error)
-        }
+    const storedAddress = localStorage.getItem(ADDRESS_STORAGE_KEY)
+    if (storedAddress) {
+      try {
+        setAddress(JSON.parse(storedAddress))
+      } catch (error) {
+        console.error("Erro ao carregar endereço:", error)
       }
     }
   }, [])
@@ -87,9 +75,7 @@ export default function CheckoutPage() {
 
   const handleSaveAddress = (newAddress: Address) => {
     setAddress(newAddress)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(newAddress))
-    }
+    localStorage.setItem(ADDRESS_STORAGE_KEY, JSON.stringify(newAddress))
     toast.success("Endereço salvo com sucesso!")
   }
 
@@ -107,51 +93,34 @@ export default function CheckoutPage() {
     const formattedDate = format(date, "dd/MM/yyyy", { locale: ptBR })
 
     // Cabeçalho da mensagem
-    let message = `*NOVO PEDIDO - MÃOS DE FADA CAKE*
-
-`
+    let message = `*NOVO PEDIDO - MÃOS DE FADA CAKE*\n\n`
 
     // Informações de entrega
-    message += `*Tipo de Entrega:* ${deliveryType === "delivery" ? "Entrega" : "Retirada na Loja"}
-`
-    message += `*Data:* ${formattedDate}
-`
-    message += `*Horário:* ${time}
-
-`
+    message += `*Tipo de Entrega:* ${deliveryType === "delivery" ? "Entrega" : "Retirada na Loja"}\n`
+    message += `*Data:* ${formattedDate}\n`
+    message += `*Horário:* ${time}\n\n`
 
     // Endereço (se for entrega)
     if (deliveryType === "delivery" && address) {
-      message += `*Endereço de Entrega:*
-`
-      message += `${address.street}, ${address.number}
-`
+      message += `*Endereço de Entrega:*\n`
+      message += `${address.street}, ${address.number}\n`
       if (address.complement) {
-        message += `${address.complement}
-`
+        message += `${address.complement}\n`
       }
-      message += `${address.neighborhood}
-
-`
+      message += `${address.neighborhood}\n\n`
     }
 
     // Itens do pedido
-    message += `*ITENS DO PEDIDO:*
-
-`
+    message += `*ITENS DO PEDIDO:*\n\n`
 
     items.forEach((item, index) => {
-      message += `*${index + 1}. ${item.product.name}*
-`
-      message += `Quantidade: ${item.quantity}
-`
-      message += `Valor unitário: R$ ${item.totalPrice.toFixed(2).replace(".", ",")}
-`
+      message += `*${index + 1}. ${item.product.name}*\n`
+      message += `Quantidade: ${item.quantity}\n`
+      message += `Valor unitário: R$ ${item.totalPrice.toFixed(2).replace(".", ",")}\n`
 
       // Customizações
       if (item.customizations && item.customizations.length > 0) {
-        message += `*Customizações:*
-`
+        message += `*Customizações:*\n`
 
         // Agrupar customizações por tipo
         const customizationsByType: Record<string, string[]> = {}
@@ -165,38 +134,30 @@ export default function CheckoutPage() {
 
         // Adicionar customizações agrupadas
         Object.entries(customizationsByType).forEach(([label, values]) => {
-          message += `- ${label}: ${values.join(", ")}
-`
+          message += `- ${label}: ${values.join(", ")}\n`
         })
       }
 
       // Mensagem personalizada
       if (item.customMessage) {
-        message += `*Mensagem:* "${item.customMessage}"
-`
+        message += `*Mensagem:* "${item.customMessage}"\n`
       }
 
       // Informações de entrega gratuita ou topper gratuito
       if (item.hasFreeDelivery) {
-        message += `*Entrega:* Grátis
-`
+        message += `*Entrega:* Grátis\n`
       }
       if (item.hasFreeTopper) {
-        message += `*Topper:* Grátis
-`
+        message += `*Topper:* Grátis\n`
       }
 
-      message += `
-`
+      message += `\n`
     })
 
     // Resumo de valores
-    message += `*RESUMO DE VALORES:*
-`
-    message += `Subtotal: R$ ${totalPrice.toFixed(2).replace(".", ",")}
-`
-    message += `Taxa de entrega: ${deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}
-`
+    message += `*RESUMO DE VALORES:*\n`
+    message += `Subtotal: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`
+    message += `Taxa de entrega: ${deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}\n`
     message += `*Total: R$ ${(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}`
 
     return encodeURIComponent(message)
@@ -224,11 +185,8 @@ export default function CheckoutPage() {
     // Criar a URL do WhatsApp
     const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`
 
-    // Garantir que window está definido antes de usar
-    if (typeof window !== "undefined") {
-      // Abrir o WhatsApp em uma nova aba
-      window.open(whatsappUrl, "_blank")
-    }
+    // Abrir o WhatsApp em uma nova aba
+    window.open(whatsappUrl, "_blank")
 
     toast.success("Pedido finalizado com sucesso!", {
       description: `Seu pedido será ${
