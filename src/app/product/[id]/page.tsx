@@ -15,7 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { OrderFooter } from "@/components/order-footer"
 import { QuantitySelector } from "@/components/quantity-selector"
 
-
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
@@ -165,16 +164,16 @@ export default function ProductPage() {
     }
   }, [product])
 
+  // Modifique o efeito que calcula o preço total (por volta da linha 200)
+
   // Efeito para atualizar o preço quando as seleções mudarem
   useEffect(() => {
     if (!product) return
 
-    let basePrice = 0
-    let additionalPrice = 0
+    let totalItemPrice = 0
 
-    // Determinar o preço base a partir do tamanho selecionado
+    // Para produtos com opção de tamanho, o preço base vem do tamanho selecionado
     if (product.customizationOptions) {
-      // Verificar se existe opção de tamanho
       const sizeOption = product.customizationOptions.find((opt) => opt.type === "cakeSize")
 
       if (sizeOption) {
@@ -183,18 +182,33 @@ export default function ProductPage() {
         if (selectedSizeId) {
           const selectedSize = sizeOption.options.find((opt) => opt.id === selectedSizeId)
           if (selectedSize) {
-            basePrice = selectedSize.price
+            totalItemPrice = selectedSize.price
           }
         } else {
           // Se nenhum tamanho foi selecionado ainda, use o preço do primeiro tamanho
-          basePrice = sizeOption.options[0].price
+          totalItemPrice = sizeOption.options[0].price
+        }
+      } else if (product.id === "11") {
+        // Para docinhos (id 11), o preço vem da opção de quantidade
+        const quantidadeOption = product.customizationOptions.find((opt) => opt.type === "quantidade")
+        const selectedQuantidadeId = customizations["quantidade"] as string
+
+        if (quantidadeOption && selectedQuantidadeId) {
+          const selectedQuantidade = quantidadeOption.options.find((opt) => opt.id === selectedQuantidadeId)
+          if (selectedQuantidade) {
+            totalItemPrice = selectedQuantidade.price
+          } else {
+            totalItemPrice = product.price
+          }
+        } else {
+          totalItemPrice = product.price
         }
       } else {
-        // Se não existe opção de tamanho, use o preço base do produto
-        basePrice = product.price
+        // Para produtos sem opção de tamanho, use o preço base
+        totalItemPrice = product.price
       }
 
-      // Adicionar preço das outras customizações (exceto tamanho)
+      // Adicionar preço das outras customizações (exceto tamanho e quantidade)
       product.customizationOptions.forEach((option) => {
         // Pular opções que dependem de outras seleções e não estão ativas
         if (option.dependsOn) {
@@ -208,8 +222,13 @@ export default function ProductPage() {
           }
         }
 
-        // Pulamos a opção de tamanho, pois já foi tratada acima
-        if (option.type !== "cakeSize" && option.type !== "simpleFilling" && option.type !== "gourmetFilling") {
+        // Pulamos as opções de tamanho e quantidade, pois já foram tratadas acima
+        if (
+          option.type !== "cakeSize" &&
+          option.type !== "quantidade" &&
+          option.type !== "simpleFilling" &&
+          option.type !== "gourmetFilling"
+        ) {
           // Se for topper e o produto tem topper gratuito, não adicionar ao preço
           if (option.type === "topper" && hasFreeTopper) {
             return
@@ -221,7 +240,7 @@ export default function ProductPage() {
             selectedValues.forEach((selectedId) => {
               const selectedOption = option.options.find((opt) => opt.id === selectedId)
               if (selectedOption) {
-                additionalPrice += selectedOption.price
+                totalItemPrice += selectedOption.price
               }
             })
           } else {
@@ -230,7 +249,7 @@ export default function ProductPage() {
             if (selectedId) {
               const selectedOption = option.options.find((opt) => opt.id === selectedId)
               if (selectedOption) {
-                additionalPrice += selectedOption.price
+                totalItemPrice += selectedOption.price
               }
             }
           }
@@ -238,7 +257,7 @@ export default function ProductPage() {
       })
     } else {
       // Se não há opções de customização, use o preço base do produto
-      basePrice = product.price
+      totalItemPrice = product.price
     }
 
     // Adicionar preço dos recheios simples
@@ -247,7 +266,7 @@ export default function ProductPage() {
       selectedFillings.simple.forEach((fillingId) => {
         const filling = simpleFillingOption.options.find((opt) => opt.id === fillingId)
         if (filling) {
-          additionalPrice += filling.price
+          totalItemPrice += filling.price
         }
       })
     }
@@ -258,14 +277,13 @@ export default function ProductPage() {
       selectedFillings.gourmet.forEach((fillingId) => {
         const filling = gourmetFillingOption.options.find((opt) => opt.id === fillingId)
         if (filling) {
-          additionalPrice += filling.price
+          totalItemPrice += filling.price
         }
       })
     }
 
     // Multiplicar pelo quantidade
-    const itemPrice = basePrice + additionalPrice
-    setTotalPrice(itemPrice * quantity)
+    setTotalPrice(totalItemPrice * quantity)
   }, [product, customizations, selectedFillings, quantity, hasFreeTopper])
 
   if (!product) {
@@ -454,6 +472,21 @@ export default function ProductPage() {
       })
     }
 
+    // Calcular o preço unitário correto
+    let unitPrice = totalPrice / quantity
+
+    // Para cupcakes, usar o preço base ou o preço da opção selecionada
+    if (product.id === "8") {
+      const cakeTypeId = customizations["cakeType"] as string
+      if (cakeTypeId) {
+        const cakeTypeOption = product.customizationOptions?.find((opt) => opt.type === "cakeType")
+        const selectedType = cakeTypeOption?.options.find((opt) => opt.id === cakeTypeId)
+        unitPrice = selectedType?.price || product.price
+      } else {
+        unitPrice = product.price
+      }
+    }
+
     // Adicionar o item ao carrinho
     addItem({
       product: {
@@ -464,12 +497,12 @@ export default function ProductPage() {
         description: product.description,
         imageUrl: product.imageUrl,
       },
-      quantity: quantity, // Usar a quantidade selecionada
+      quantity: quantity,
       customizations: cartCustomizations,
       customMessage: customMessage || undefined,
-      totalPrice: totalPrice / quantity, // Preço unitário
-      hasFreeDelivery: hasFreeDelivery, // Adicionar informação de entrega gratuita
-      hasFreeTopper: hasFreeTopper, // Adicionar informação de topper gratuito
+      totalPrice: unitPrice,
+      hasFreeDelivery: hasFreeDelivery,
+      hasFreeTopper: hasFreeTopper,
     })
 
     // Redirecionar para a página inicial
