@@ -65,7 +65,6 @@ const cakeCoberturaPiscina: ProductOption[] = [
 const cakesizeRedondo: ProductOption[] = [
   { id: "17", name: "17cm (13 a 15 Fatias)", price: 110 },
   { id: "23", name: "23cm (23 a 25 Fatias)", price: 180 },
-  { id: "25", name: "25cm (25 a 30 Fatias)", price: 200 },
   { id: "28", name: "28cm (40 a 45 Fatias)", price: 270 },
   { id: "33", name: "33cm (45 a 50 Fatias)", price: 300 },
   { id: "40", name: "40cm (60 a 65 Fatias)", price: 320 },
@@ -90,7 +89,6 @@ const cakeSizeAndar: ProductOption[] = [
 const cakeSizeAcetato: ProductOption[] = [
   { id: "17", name: "17cm (13 a 15 fatias)", price: 110 },
   { id: "23", name: "23cm (23 a 25 fatias)", price: 180 },
-  { id: "25", name: "25cm (25 a 30 fatias)", price: 200 },
   { id: "28", name: "28cm (40 a 45 fatias)", price: 270 },
   { id: "33", name: "33cm (45 a 50 fatias)", price: 300 },
   { id: "40", name: "40cm (60 a 65 fatias)", price: 320 },
@@ -601,8 +599,8 @@ export const products: Product[] = [
         required: true,
         options: [
           { id: "50", name: "50 Docinhos", price: 70 },
-          { id: "120", name: "120 Docinhos", price: 168 },
-          { id: "150", name: "150 Docinhos", price: 210 },
+          { id: "100", name: "120 Docinhos", price: 140 },
+          { id: "200", name: "150 Docinhos", price: 210 },
         ],
       },
     ],
