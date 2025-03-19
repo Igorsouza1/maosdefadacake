@@ -599,8 +599,8 @@ export const products: Product[] = [
         required: true,
         options: [
           { id: "50", name: "50 Docinhos", price: 70 },
-          { id: "100", name: "120 Docinhos", price: 140 },
-          { id: "200", name: "150 Docinhos", price: 210 },
+          { id: "100", name: "100 Docinhos", price: 140 },
+          { id: "200", name: "200 Docinhos", price: 210 },
         ],
       },
     ],
