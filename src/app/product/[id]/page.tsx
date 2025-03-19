@@ -37,6 +37,29 @@ interface ProductCustomizationResult {
   handleFillingSelection: (fillingType: "simple" | "gourmet", fillingId: string, isSelected: boolean) => boolean
 }
 
+// Interface para o resultado parcial do hook
+interface PartialProductCustomizationResult {
+  customizations: Record<string, string | string[]>
+  selectedFillings: {
+    simple: string[]
+    gourmet: string[]
+  }
+  customMessage: string
+  quantity: number
+  totalPrice: number
+  fillingLayers: number
+  totalSelectedFillings: number
+  remainingFillings: number
+  isFormValid: boolean
+  hasFreeDelivery: boolean
+  hasFreeTopper: boolean
+  gourmetFillingMultiplier?: number
+  setCustomMessage: (message: string) => void
+  setQuantity: (quantity: number) => void
+  handleCustomizationChange: (type: string, value: string | string[]) => void
+  handleFillingSelection: (fillingType: "simple" | "gourmet", fillingId: string, isSelected: boolean) => boolean
+}
+
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
@@ -71,10 +94,11 @@ export default function ProductPage() {
     handleCustomizationChange,
     handleFillingSelection,
   } = useMemo<ProductCustomizationResult>(() => {
+    const result = customizationHookResult as PartialProductCustomizationResult
     return {
-      ...customizationHookResult,
+      ...result,
       // Garantir que gourmetFillingMultiplier exista, mesmo que não seja retornado pelo hook
-      gourmetFillingMultiplier: (customizationHookResult as any).gourmetFillingMultiplier || 1,
+      gourmetFillingMultiplier: result.gourmetFillingMultiplier || 1,
     }
   }, [customizationHookResult])
 
