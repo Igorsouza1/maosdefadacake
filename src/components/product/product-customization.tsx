@@ -1,7 +1,9 @@
+"use client"
+
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { CustomCheckbox } from "./custom-checkbox"
-import { ProductCustomizationOption, ProductOption } from "@/data/products"
+import type { ProductCustomizationOption } from "@/data/products"
 
 interface ProductCustomizationProps {
   option: ProductCustomizationOption
@@ -14,6 +16,7 @@ interface ProductCustomizationProps {
   totalSelectedFillings: number
   fillingLayers: number
   hasFreeTopper: boolean
+  gourmetFillingMultiplier?: number
   handleCustomizationChange: (type: string, value: string | string[]) => void
   handleFillingSelection?: (fillingType: "simple" | "gourmet", fillingId: string, isSelected: boolean) => boolean
 }
@@ -26,24 +29,29 @@ export function ProductCustomization({
   totalSelectedFillings,
   fillingLayers,
   hasFreeTopper,
+  gourmetFillingMultiplier = 1,
   handleCustomizationChange,
-  handleFillingSelection
+  handleFillingSelection,
 }: ProductCustomizationProps) {
   // Renderização especial para recheios
   if (option.type === "simpleFilling" || option.type === "gourmetFilling") {
     const isSimple = option.type === "simpleFilling"
     const fillingType = isSimple ? "simple" : "gourmet"
     const selectedIds = selectedFillings[fillingType]
+    
+    // Determinar se devemos mostrar o multiplicador
+    const showMultiplier = !isSimple && gourmetFillingMultiplier > 1
 
     return (
       <div className="mb-0">
         <div className="bg-rose-400 text-white py-3 px-4 flex justify-between items-center">
           <div>
-            <h3 className="font-medium">{option.label}</h3>
+            <h3 className="font-medium">
+              {option.label}
+              {showMultiplier && <span className="ml-2">(x{gourmetFillingMultiplier})</span>}
+            </h3>
             <p className="text-sm opacity-90">
-              {remainingFillings > 0
-                ? `Escolha até ${remainingFillings} opção(ões)`
-                : "Limite de recheios atingido"}
+              {remainingFillings > 0 ? `Escolha até ${remainingFillings} opção(ões)` : "Limite de recheios atingido"}
             </p>
           </div>
           <Badge variant="secondary" className="bg-white text-rose-500">
@@ -55,14 +63,17 @@ export function ProductCustomization({
           <div className="w-full divide-y divide-gray-100">
             {option.options.map((item) => {
               const isChecked = selectedIds.includes(item.id)
+              // Calcular o preço com multiplicador para exibição
+              const displayPrice = isSimple ? item.price : item.price * gourmetFillingMultiplier
 
               return (
                 <div key={item.id} className="flex items-center justify-between py-3 px-4 w-full">
                   <span className="font-medium text-gray-800">
                     {item.name}
-                    {item.price > 0 && (
+                    {displayPrice > 0 && (
                       <span className="ml-2 text-sm text-rose-600">
-                        +R$ {item.price.toFixed(2).replace(".", ",")}
+                        +R$ {displayPrice.toFixed(2).replace(".", ",")}
+                        {showMultiplier && <span className="text-xs ml-1">(x{gourmetFillingMultiplier})</span>}
                       </span>
                     )}
                   </span>

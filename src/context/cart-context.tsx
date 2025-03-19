@@ -8,6 +8,8 @@ export interface CartItemCustomization {
   label: string
   value: string
   price: number
+  originalPrice?: number
+  multiplier?: number
 }
 
 export interface CartItem {

@@ -1,6 +1,60 @@
 import type { Product } from "@/data/products"
-import type { CartItemCustomization } from "@/context/cart-context"
+import type { CartItemCustomization, CartItem } from "@/context/cart-context"
 import { toast } from "sonner"
+
+// IDs dos bolos que têm recheios gourmet
+const BOLOS_COM_RECHEIO_GOURMET = ["1", "2", "3", "4", "5", "9"] // Redondo, Retangular, Metro, Andar, Acetato, Aquário
+
+// Função para determinar o multiplicador de preço do recheio gourmet com base no tamanho do bolo
+function getGourmetFillingMultiplier(productId: string, sizeId: string): number {
+  // Bolo Redondo (ID: 1)
+  if (productId === "1") {
+    // Tamanhos maiores têm multiplicador 2
+    if (["28", "33", "40"].includes(sizeId)) {
+      return 2
+    }
+  }
+
+  // Bolo Retangular (ID: 2)
+  else if (productId === "2") {
+    // Tamanhos médio e grande têm multiplicador 2
+    if (["medium", "large"].includes(sizeId)) {
+      return 2
+    }
+  }
+
+  // Bolo de Metro (ID: 3)
+  else if (productId === "3") {
+    // Um metro tem multiplicador 2
+    if (sizeId === "ummetro") {
+      return 2
+    }
+  }
+
+  // Bolo de Andar (ID: 4)
+  else if (productId === "4") {
+    // 3 andares tem multiplicador 2
+    if (sizeId === "tresandares") {
+      return 2
+    }
+  }
+
+  // Bolo de Acetato (ID: 5)
+  else if (productId === "5") {
+    // Tamanhos maiores têm multiplicador 2
+    if (["28", "33", "40"].includes(sizeId)) {
+      return 2
+    }
+  }
+
+  // Bolo Aquário (ID: 9) - sempre tem multiplicador 2 por ser grande
+  else if (productId === "9") {
+    return 2
+  }
+
+  // Padrão: sem multiplicador
+  return 1
+}
 
 interface AddToCartParams {
   product: Product
@@ -16,7 +70,8 @@ interface AddToCartParams {
   hasFreeTopper: boolean
   fillingLayers: number
   totalSelectedFillings: number
-  addItem: (item: any) => void
+  addItem: (item: CartItem) => void
+  gourmetFillingMultiplier?: number
 }
 
 export function addToCart({
@@ -31,6 +86,7 @@ export function addToCart({
   fillingLayers,
   totalSelectedFillings,
   addItem,
+  gourmetFillingMultiplier,
 }: AddToCartParams) {
   // Verificar se todas as opções obrigatórias foram selecionadas
   const missingRequired = product.customizationOptions?.filter((option) => {
@@ -146,9 +202,16 @@ export function addToCart({
     })
   }
 
-  // Adicionar recheios gourmet
+  // Adicionar recheios gourmet com multiplicador quando aplicável
   const gourmetFillingOption = product.customizationOptions?.find((opt) => opt.type === "gourmetFilling")
   if (gourmetFillingOption && selectedFillings.gourmet.length > 0) {
+    // Verificar se é um dos bolos que tem multiplicador de recheio gourmet
+    let multiplier = gourmetFillingMultiplier || 1
+    if (!gourmetFillingMultiplier && BOLOS_COM_RECHEIO_GOURMET.includes(product.id)) {
+      const selectedSizeId = customizations["cakeSize"] as string
+      multiplier = getGourmetFillingMultiplier(product.id, selectedSizeId)
+    }
+
     selectedFillings.gourmet.forEach((fillingId) => {
       const filling = gourmetFillingOption.options.find((opt) => opt.id === fillingId)
       if (filling) {
@@ -156,7 +219,9 @@ export function addToCart({
           type: "gourmetFilling",
           label: gourmetFillingOption.label,
           value: filling.name,
-          price: filling.price,
+          price: filling.price * multiplier, // Aplicar o multiplicador
+          originalPrice: filling.price, // Guardar o preço original
+          multiplier: multiplier, // Guardar o multiplicador para referência
         })
       }
     })

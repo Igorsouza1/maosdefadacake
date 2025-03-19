@@ -14,6 +14,29 @@ import { useProductCustomization } from "@/hooks/use-product-customization"
 import { addToCart } from "@/services/cart-service"
 import { useMemo } from "react"
 
+// Definir uma interface para o resultado do hook useProductCustomization
+interface ProductCustomizationResult {
+  customizations: Record<string, string | string[]>
+  selectedFillings: {
+    simple: string[]
+    gourmet: string[]
+  }
+  customMessage: string
+  quantity: number
+  totalPrice: number
+  fillingLayers: number
+  totalSelectedFillings: number
+  remainingFillings: number
+  isFormValid: boolean
+  hasFreeDelivery: boolean
+  hasFreeTopper: boolean
+  gourmetFillingMultiplier: number
+  setCustomMessage: (message: string) => void
+  setQuantity: (quantity: number) => void
+  handleCustomizationChange: (type: string, value: string | string[]) => void
+  handleFillingSelection: (fillingType: "simple" | "gourmet", fillingId: string, isSelected: boolean) => boolean
+}
+
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
@@ -23,20 +46,13 @@ export default function ProductPage() {
   const productId = params.id as string
   const product = getProductById(productId)
 
-  if (!product) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <h1 className="text-2xl font-bold mb-4">Produto não encontrado</h1>
-        <button onClick={() => router.push("/")} className="px-4 py-2 bg-rose-500 text-white rounded">
-          Voltar para a loja
-        </button>
-      </div>
-    )
-  }
+  // Sempre chamar o hook, independente se o produto existe ou não
+  // Isso garante que os hooks sejam chamados na mesma ordem
+  const customizationHookResult = useProductCustomization(
+    product || { id: "", name: "", price: 0, category: "", description: "", imageUrl: "" },
+  )
 
-  // Ensure useProductCustomization is always called
-  const customizationHookResult = useProductCustomization(product)
-
+  // Usar useMemo fora de qualquer condicional com anotação de tipo explícita
   const {
     customizations,
     selectedFillings,
@@ -49,15 +65,22 @@ export default function ProductPage() {
     isFormValid,
     hasFreeDelivery,
     hasFreeTopper,
+    gourmetFillingMultiplier,
     setCustomMessage,
     setQuantity,
     handleCustomizationChange,
     handleFillingSelection,
-  } = useMemo(() => {
-    return customizationHookResult
+  } = useMemo<ProductCustomizationResult>(() => {
+    return {
+      ...customizationHookResult,
+      // Garantir que gourmetFillingMultiplier exista, mesmo que não seja retornado pelo hook
+      gourmetFillingMultiplier: (customizationHookResult as any).gourmetFillingMultiplier || 1,
+    }
   }, [customizationHookResult])
 
   const handleAddToCart = () => {
+    if (!product) return false
+
     const success = addToCart({
       product,
       customizations,
@@ -70,12 +93,25 @@ export default function ProductPage() {
       fillingLayers,
       totalSelectedFillings,
       addItem,
+      gourmetFillingMultiplier,
     })
 
     if (success) {
       // Redirecionar para a página inicial
       router.push("/")
     }
+  }
+
+  // Renderizar mensagem de erro se o produto não existir
+  if (!product) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <h1 className="text-2xl font-bold mb-4">Produto não encontrado</h1>
+        <button onClick={() => router.push("/")} className="px-4 py-2 bg-rose-500 text-white rounded">
+          Voltar para a loja
+        </button>
+      </div>
+    )
   }
 
   return (
@@ -130,6 +166,7 @@ export default function ProductPage() {
               totalSelectedFillings={totalSelectedFillings}
               fillingLayers={fillingLayers}
               hasFreeTopper={hasFreeTopper}
+              gourmetFillingMultiplier={gourmetFillingMultiplier}
               handleCustomizationChange={handleCustomizationChange}
               handleFillingSelection={handleFillingSelection}
             />
