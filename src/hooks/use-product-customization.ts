@@ -238,6 +238,18 @@ export function useProductCustomization(product: Product) {
             return
           }
 
+          // Se for camadas de recheio, verificar se é bolo de 17cm
+          if (option.type === "fillingLayers") {
+            const selectedLayerId = customizations[option.type] as string
+            const is17cm = selectedSizeId === "17"
+            
+            // Só adicionar o adicional de +10 se for bolo de 17cm e 2 camadas
+            if (is17cm && selectedLayerId === "two") {
+              totalItemPrice += 10
+            }
+            return
+          }
+
           if (option.multiple) {
             // Para opções múltiplas (checkboxes)
             const selectedValues = (customizations[option.type] as string[]) || []

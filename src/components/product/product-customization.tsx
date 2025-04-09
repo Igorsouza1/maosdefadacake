@@ -133,6 +133,44 @@ export function ProductCustomization({
     )
   }
 
+  // Renderização especial para camadas de recheio
+  if (option.type === "fillingLayers") {
+    const selectedSizeId = customizations["cakeSize"] as string
+    const is17cm = selectedSizeId === "17"
+
+    return (
+      <div className="mb-0">
+        <div className="bg-rose-400 text-white py-3 px-4">
+          <h3 className="font-medium">{option.label}</h3>
+          {option.required && <p className="text-sm opacity-90">Escolha 1 opção</p>}
+        </div>
+
+        <div className="bg-white w-full">
+          <RadioGroup
+            value={(customizations[option.type] as string) || ""}
+            onValueChange={(value) => handleCustomizationChange(option.type, value)}
+            className="w-full divide-y divide-gray-100"
+          >
+            {option.options.map((item) => (
+              <div key={item.id} className="flex items-center justify-between py-3 px-4 w-full">
+                <label htmlFor={`${option.type}-${item.id}`} className="font-medium text-gray-800">
+                  {item.name}
+                  {/* Só mostrar o preço de +10 se for bolo de 17cm e 2 camadas */}
+                  {item.price !== 0 && is17cm && item.id === "two" && (
+                    <span className="ml-2 text-sm text-rose-600">
+                      +R$ {item.price.toFixed(2).replace(".", ",")}
+                    </span>
+                  )}
+                </label>
+                <RadioGroupItem value={item.id} id={`${option.type}-${item.id}`} className="text-rose-500" />
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+      </div>
+    )
+  }
+
   // Renderização normal para outras opções
   return (
     <div className="mb-0">
