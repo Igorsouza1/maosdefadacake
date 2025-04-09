@@ -212,13 +212,61 @@ export function useProductCustomization(product: Product) {
         })
       }
 
+      // Adicionar preço das outras customizações (exceto tamanho e quantidade)
+      product.customizationOptions.forEach((option) => {
+        // Pular opções que dependem de outras seleções e não estão ativas
+        if (option.dependsOn) {
+          const dependencyType = option.dependsOn.type
+          const dependencyValue = option.dependsOn.value
+          const currentValue = customizations[dependencyType] as string
+
+          // Se a dependência não for satisfeita, pular esta opção
+          if (currentValue !== dependencyValue) {
+            return
+          }
+        }
+
+        // Pulamos as opções de tamanho e quantidade, pois já foram tratadas acima
+        if (
+          option.type !== "cakeSize" &&
+          option.type !== "quantidade" &&
+          option.type !== "simpleFilling" &&
+          option.type !== "gourmetFilling"
+        ) {
+          // Se for topper e o produto tem topper gratuito, não adicionar ao preço
+          if (option.type === "topper" && hasFreeTopper) {
+            return
+          }
+
+          if (option.multiple) {
+            // Para opções múltiplas (checkboxes)
+            const selectedValues = (customizations[option.type] as string[]) || []
+            selectedValues.forEach((selectedId) => {
+              const selectedOption = option.options.find((opt) => opt.id === selectedId)
+              if (selectedOption) {
+                totalItemPrice += selectedOption.price
+              }
+            })
+          } else {
+            // Para opções únicas (radio buttons)
+            const selectedId = customizations[option.type] as string
+            if (selectedId) {
+              const selectedOption = option.options.find((opt) => opt.id === selectedId)
+              if (selectedOption) {
+                totalItemPrice += selectedOption.price
+              }
+            }
+          }
+        }
+      })
+
       setTotalPrice(totalItemPrice * quantity)
     } else {
       // Se não há opções de customização, use o preço base do produto
       totalItemPrice = product.price
       setTotalPrice(totalItemPrice * quantity)
     }
-  }, [product, customizations, selectedFillings, quantity])
+  }, [product, customizations, selectedFillings, quantity, hasFreeTopper])
 
   const handleCustomizationChange = (type: string, value: string | string[]) => {
     // Se for uma mudança nas camadas de recheio, resetamos as seleções de recheio
