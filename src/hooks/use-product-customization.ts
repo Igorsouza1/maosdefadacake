@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import type { Product } from "@/data/products"
+import { getSizeMultiplier } from "@/data/products"
 import { toast } from "sonner"
 
 export function useProductCustomization(product: Product) {
@@ -151,13 +152,11 @@ export function useProductCustomization(product: Product) {
       if (cakeTypeId) {
         const cakeTypeOption = product.customizationOptions?.find((opt) => opt.type === "cakeType")
         const selectedType = cakeTypeOption?.options.find((opt) => opt.id === cakeTypeId)
-        // Use apenas o preço da opção selecionada
         totalItemPrice = selectedType?.price || product.price
       } else {
         totalItemPrice = product.price
       }
 
-      // Multiplicar pelo quantidade e retornar imediatamente para evitar cálculos adicionais
       setTotalPrice(totalItemPrice * quantity)
       return
     }
@@ -165,21 +164,15 @@ export function useProductCustomization(product: Product) {
     // Para produtos com opção de tamanho, o preço base vem do tamanho selecionado
     if (product.customizationOptions) {
       const sizeOption = product.customizationOptions.find((opt) => opt.type === "cakeSize")
+      const selectedSizeId = customizations["cakeSize"] as string
+      const sizeMultiplier = selectedSizeId ? getSizeMultiplier(selectedSizeId) : 1
 
       if (sizeOption) {
-        // Se existe opção de tamanho, o preço base é determinado pelo tamanho selecionado
-        const selectedSizeId = customizations["cakeSize"] as string
-        if (selectedSizeId) {
-          const selectedSize = sizeOption.options.find((opt) => opt.id === selectedSizeId)
-          if (selectedSize) {
-            totalItemPrice = selectedSize.price
-          }
-        } else {
-          // Se nenhum tamanho foi selecionado ainda, use o preço do primeiro tamanho
-          totalItemPrice = sizeOption.options[0].price
+        const selectedSize = sizeOption.options.find((opt) => opt.id === selectedSizeId)
+        if (selectedSize) {
+          totalItemPrice = selectedSize.price
         }
       } else if (product.id === "11") {
-        // Para docinhos (id 11), o preço vem da opção de quantidade
         const quantidadeOption = product.customizationOptions.find((opt) => opt.type === "quantidade")
         const selectedQuantidadeId = customizations["quantidade"] as string
 
@@ -194,87 +187,38 @@ export function useProductCustomization(product: Product) {
           totalItemPrice = product.price
         }
       } else {
-        // Para produtos sem opção de tamanho, use o preço base
         totalItemPrice = product.price
       }
 
-      // Adicionar preço das outras customizações (exceto tamanho e quantidade)
-      product.customizationOptions.forEach((option) => {
-        // Pular opções que dependem de outras seleções e não estão ativas
-        if (option.dependsOn) {
-          const dependencyType = option.dependsOn.type
-          const dependencyValue = option.dependsOn.value
-          const currentValue = customizations[dependencyType] as string
-
-          // Se a dependência não for satisfeita, pular esta opção
-          if (currentValue !== dependencyValue) {
-            return
+      // Adicionar preço dos recheios gourmet com multiplicador de tamanho
+      const gourmetFillingOption = product.customizationOptions?.find((opt) => opt.type === "gourmetFilling")
+      if (gourmetFillingOption) {
+        selectedFillings.gourmet.forEach((fillingId) => {
+          const filling = gourmetFillingOption.options.find((opt) => opt.id === fillingId)
+          if (filling) {
+            totalItemPrice += filling.price * sizeMultiplier
           }
-        }
+        })
+      }
 
-        // Pulamos as opções de tamanho e quantidade, pois já foram tratadas acima
-        if (
-          option.type !== "cakeSize" &&
-          option.type !== "quantidade" &&
-          option.type !== "simpleFilling" &&
-          option.type !== "gourmetFilling"
-        ) {
-          // Se for topper e o produto tem topper gratuito, não adicionar ao preço
-          if (option.type === "topper" && hasFreeTopper) {
-            return
+      // Adicionar preço dos recheios simples (sem multiplicador)
+      const simpleFillingOption = product.customizationOptions?.find((opt) => opt.type === "simpleFilling")
+      if (simpleFillingOption) {
+        selectedFillings.simple.forEach((fillingId) => {
+          const filling = simpleFillingOption.options.find((opt) => opt.id === fillingId)
+          if (filling) {
+            totalItemPrice += filling.price
           }
+        })
+      }
 
-          if (option.multiple) {
-            // Para opções múltiplas (checkboxes)
-            const selectedValues = (customizations[option.type] as string[]) || []
-            selectedValues.forEach((selectedId) => {
-              const selectedOption = option.options.find((opt) => opt.id === selectedId)
-              if (selectedOption) {
-                totalItemPrice += selectedOption.price
-              }
-            })
-          } else {
-            // Para opções únicas (radio buttons)
-            const selectedId = customizations[option.type] as string
-            if (selectedId) {
-              const selectedOption = option.options.find((opt) => opt.id === selectedId)
-              if (selectedOption) {
-                totalItemPrice += selectedOption.price
-              }
-            }
-          }
-        }
-      })
+      setTotalPrice(totalItemPrice * quantity)
     } else {
       // Se não há opções de customização, use o preço base do produto
       totalItemPrice = product.price
+      setTotalPrice(totalItemPrice * quantity)
     }
-
-    // Adicionar preço dos recheios simples
-    const simpleFillingOption = product.customizationOptions?.find((opt) => opt.type === "simpleFilling")
-    if (simpleFillingOption) {
-      selectedFillings.simple.forEach((fillingId) => {
-        const filling = simpleFillingOption.options.find((opt) => opt.id === fillingId)
-        if (filling) {
-          totalItemPrice += filling.price
-        }
-      })
-    }
-
-    // Adicionar preço dos recheios gourmet
-    const gourmetFillingOption = product.customizationOptions?.find((opt) => opt.type === "gourmetFilling")
-    if (gourmetFillingOption) {
-      selectedFillings.gourmet.forEach((fillingId) => {
-        const filling = gourmetFillingOption.options.find((opt) => opt.id === fillingId)
-        if (filling) {
-          totalItemPrice += filling.price
-        }
-      })
-    }
-
-    // Multiplicar pelo quantidade
-    setTotalPrice(totalItemPrice * quantity)
-  }, [product, customizations, selectedFillings, quantity, hasFreeTopper])
+  }, [product, customizations, selectedFillings, quantity])
 
   const handleCustomizationChange = (type: string, value: string | string[]) => {
     // Se for uma mudança nas camadas de recheio, resetamos as seleções de recheio

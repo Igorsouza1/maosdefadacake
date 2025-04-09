@@ -4,6 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Badge } from "@/components/ui/badge"
 import { CustomCheckbox } from "./custom-checkbox"
 import type { ProductCustomizationOption } from "@/data/products"
+import { getSizeMultiplier } from "@/data/products"
 
 interface ProductCustomizationProps {
   option: ProductCustomizationOption
@@ -40,7 +41,9 @@ export function ProductCustomization({
     const selectedIds = selectedFillings[fillingType]
     
     // Determinar se devemos mostrar o multiplicador
-    const showMultiplier = !isSimple && gourmetFillingMultiplier > 1
+    const selectedSizeId = customizations["cakeSize"] as string
+    const sizeMultiplier = selectedSizeId ? getSizeMultiplier(selectedSizeId) : 1
+    const showMultiplier = !isSimple && sizeMultiplier > 1
 
     return (
       <div className="mb-0">
@@ -48,7 +51,7 @@ export function ProductCustomization({
           <div>
             <h3 className="font-medium">
               {option.label}
-              {showMultiplier && <span className="ml-2">(x{gourmetFillingMultiplier})</span>}
+              {showMultiplier && <span className="ml-2">(x{sizeMultiplier})</span>}
             </h3>
             <p className="text-sm opacity-90">
               {remainingFillings > 0 ? `Escolha até ${remainingFillings} opção(ões)` : "Limite de recheios atingido"}
@@ -64,7 +67,7 @@ export function ProductCustomization({
             {option.options.map((item) => {
               const isChecked = selectedIds.includes(item.id)
               // Calcular o preço com multiplicador para exibição
-              const displayPrice = isSimple ? item.price : item.price * gourmetFillingMultiplier
+              const displayPrice = isSimple ? item.price : item.price * sizeMultiplier
 
               return (
                 <div key={item.id} className="flex items-center justify-between py-3 px-4 w-full">
@@ -73,7 +76,6 @@ export function ProductCustomization({
                     {displayPrice > 0 && (
                       <span className="ml-2 text-sm text-rose-600">
                         +R$ {displayPrice.toFixed(2).replace(".", ",")}
-                        {showMultiplier && <span className="text-xs ml-1">(x{gourmetFillingMultiplier})</span>}
                       </span>
                     )}
                   </span>

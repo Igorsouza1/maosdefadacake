@@ -9,6 +9,10 @@ export interface ProductOption {
   id: string
   name: string
   price: number
+  imageUrl?: string
+  type?: string
+  options?: ProductOption[]
+  sizeMultiplier?: Record<string, number>
 }
 
 export interface ProductCustomizationOption {
@@ -618,5 +622,28 @@ export function getProductsByCategory(category: string): Product[] {
 
 export function getProductById(id: string): Product | undefined {
   return products.find((product) => product.id === id)
+}
+
+export function getSizeMultiplier(sizeId: string): number {
+  const sizeMultipliers: Record<string, number> = {
+    // Bolos Redondos
+    '17': 1,  // 17cm
+    '23': 2,  // 23cm
+    '28': 3,  // 28cm
+    '33': 4,  // 33cm
+    '40': 5,  // 40cm
+    // Bolos Retangulares
+    'small': 1,   // 25x20cm
+    'medium': 2,  // 33x25
+    'large': 3,   // 40x25
+    // Bolos Metro
+    'meiometro': 1,  // Meio Metro
+    'ummetro': 2,    // Um Metro
+    // Bolos de Andar
+    'doisandares': 2,  // 2 Andares
+    'tresandares': 3,  // 3 Andares
+  }
+
+  return sizeMultipliers[sizeId] || 1
 }
 
