@@ -30,7 +30,6 @@ export function ProductCustomization({
   totalSelectedFillings,
   fillingLayers,
   hasFreeTopper,
-  gourmetFillingMultiplier = 1,
   handleCustomizationChange,
   handleFillingSelection,
 }: ProductCustomizationProps) {
