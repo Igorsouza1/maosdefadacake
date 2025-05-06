@@ -71,7 +71,6 @@ const cakesizeRedondo: ProductOption[] = [
   { id: "23", name: "23cm (23 a 25 Fatias)", price: 180 },
   { id: "28", name: "28cm (40 a 45 Fatias)", price: 270 },
   { id: "33", name: "33cm (45 a 50 Fatias)", price: 300 },
-  { id: "40", name: "40cm (60 a 65 Fatias)", price: 320 },
 ]
 
 const cakeSizeRetangular: ProductOption[] = [
@@ -95,7 +94,6 @@ const cakeSizeAcetato: ProductOption[] = [
   { id: "23", name: "23cm (23 a 25 fatias)", price: 180 },
   { id: "28", name: "28cm (40 a 45 fatias)", price: 270 },
   { id: "33", name: "33cm (45 a 50 fatias)", price: 300 },
-  { id: "40", name: "40cm (60 a 65 fatias)", price: 320 },
 ]
 
 const fillingLayersOptions: ProductOption[] = [
@@ -410,7 +408,7 @@ export const products: Product[] = [
   {
     id: "6",
     name: "Bolo Piscina",
-    price: 40.0,
+    price: 50.0,
     category: "Bolo",
     description: "Bolo temático com formato de piscina, perfeito para festas de verão e pool parties.",
     imageUrl: "/bolo-piscina.jpeg",
@@ -604,7 +602,7 @@ export const products: Product[] = [
         options: [
           { id: "50", name: "50 Docinhos", price: 70 },
           { id: "100", name: "100 Docinhos", price: 140 },
-          { id: "200", name: "200 Docinhos", price: 210 },
+          { id: "200", name: "200 Docinhos", price: 260 },
         ],
       },
     ],
