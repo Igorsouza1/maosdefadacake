@@ -74,9 +74,9 @@ const cakesizeRedondo: ProductOption[] = [
 ]
 
 const cakeSizeRetangular: ProductOption[] = [
-  { id: "small", name: "25x20cm (20 a 25 fatias)", price: 200 },
-  { id: "medium", name: "33x25 (30 a 35 fatias", price: 300 },
-  { id: "large", name: "40x25 (40 a 45 fatias)", price: 350 },
+  { id: "small", name: "25x20cm (25 a 30 fatias)", price: 200 },
+  { id: "medium", name: "33x25 (40 a 50 fatias", price: 300 },
+  { id: "large", name: "40x25 (60 a 70 fatias)", price: 350 },
 ]
 
 const cakeSizeMetro: ProductOption[] = [
@@ -93,7 +93,7 @@ const cakeSizeAcetato: ProductOption[] = [
   { id: "17", name: "17cm (13 a 15 fatias)", price: 110 },
   { id: "23", name: "23cm (23 a 25 fatias)", price: 180 },
   { id: "28", name: "28cm (40 a 45 fatias)", price: 270 },
-  { id: "33", name: "33cm (45 a 50 fatias)", price: 300 },
+  { id: "33", name: "33cm (65 a 70 fatias)", price: 300 },
 ]
 
 const fillingLayersOptions: ProductOption[] = [
@@ -600,8 +600,8 @@ export const products: Product[] = [
         label: "Quantidade",
         required: true,
         options: [
-          { id: "50", name: "50 Docinhos", price: 70 },
-          { id: "100", name: "100 Docinhos", price: 140 },
+          { id: "50", name: "50 Docinhos", price: 80 },
+          { id: "100", name: "100 Docinhos", price: 150 },
           { id: "200", name: "200 Docinhos", price: 260 },
         ],
       },
