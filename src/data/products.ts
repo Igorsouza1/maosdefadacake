@@ -429,7 +429,7 @@ export const products: Product[] = [
   {
     id: "10",
     name: "Bolo Marmita",
-    price: 8.0,
+    price: 6.0,
     category: "Bolo",
     description: "Porção individual de bolo em formato de marmita, prática e perfeita para pequenas comemorações.",
     imageUrl: "/bolo-marmita.jpeg",
