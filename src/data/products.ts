@@ -1,7 +1,18 @@
+// Adicione esta interface para a configuração de quantidade
+export interface QuantityConfig {
+  minQuantity: number
+  maxQuantity?: number
+  defaultQuantity?: number
+}
+
 export interface ProductOption {
   id: string
   name: string
   price: number
+  imageUrl?: string
+  type?: string
+  options?: ProductOption[]
+  sizeMultiplier?: Record<string, number>
 }
 
 export interface ProductCustomizationOption {
@@ -10,6 +21,10 @@ export interface ProductCustomizationOption {
   required?: boolean
   multiple?: boolean
   options: ProductOption[]
+  dependsOn?: {
+    type: string
+    value: string
+  }
 }
 
 export interface Product {
@@ -21,59 +36,123 @@ export interface Product {
   imageUrl: string
   isFeatured?: boolean
   customizationOptions?: ProductCustomizationOption[]
+  quantityConfig?: QuantityConfig
+  freeDelivery?: boolean // Nova propriedade para entrega gratuita
+  freeTopper?: boolean // Nova propriedade para topper gratuito
 }
 
 // Opções de personalização comuns que podem ser reutilizadas
 const cakeBaseOptions: ProductOption[] = [
-  { id: "vanilla", name: "Baunilha", price: 0 },
+  { id: "amanteigada", name: "Amanteigada", price: 0 },
   { id: "chocolate", name: "Chocolate", price: 0 },
-  { id: "redvelvet", name: "Red Velvet", price: 5 },
-  { id: "carrot", name: "Cenoura", price: 0 },
-  { id: "lemon", name: "Limão", price: 0 },
+  { id: "paodelo", name: "Pão de ló", price: 0 },
 ]
 
-const cakeSizeOptions: ProductOption[] = [
-  { id: "small", name: "Pequeno (15cm)", price: -10 },
-  { id: "medium", name: "Médio (20cm)", price: 0 },
-  { id: "large", name: "Grande (25cm)", price: 20 },
-  { id: "xlarge", name: "Extra Grande (30cm)", price: 40 },
+const cakeBaseAndar: ProductOption[] = [
+  { id: "amanteigada", name: "Amanteigada", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+]
+
+const cakeBasePiscina: ProductOption[] = [
+  { id: "cenoura", name: "Cenoura", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "baunilha", name: "Baunilha", price: 0 },
+]
+
+const cakeCoberturaPiscina: ProductOption[] = [
+  { id: "leiteninho", name: "Leite Ninho", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "maracuja", name: "Mousse de Maracujá", price: 0 },
+]
+
+
+const cakesizeRedondo: ProductOption[] = [
+  { id: "17", name: "17cm (13 a 15 Fatias)", price: 110 },
+  { id: "23", name: "23cm (23 a 25 Fatias)", price: 180 },
+  { id: "28", name: "28cm (40 a 45 Fatias)", price: 270 },
+  { id: "33", name: "33cm (45 a 50 Fatias)", price: 300 },
+]
+
+const cakeSizeRetangular: ProductOption[] = [
+  { id: "small", name: "25x20cm (25 a 30 fatias)", price: 200 },
+  { id: "medium", name: "33x25 (40 a 50 fatias", price: 300 },
+  { id: "large", name: "40x25 (60 a 70 fatias)", price: 350 },
+]
+
+const cakeSizeMetro: ProductOption[] = [
+  { id: "meiometro", name: "Meio Metro (100 a 110 fatias", price: 600 },
+  { id: "ummetro", name: "Um metro (200 fatias)", price: 900 },
+]
+
+const cakeSizeAndar: ProductOption[] = [
+  { id: "doisandares", name: "2 Andares (65 a 70 fatias", price: 450 },
+  { id: "tresandares", name: "3 Andares (100 Fatias)", price: 750 },
+]
+
+const cakeSizeAcetato: ProductOption[] = [
+  { id: "17", name: "17cm (13 a 15 fatias)", price: 110 },
+  { id: "23", name: "23cm (23 a 25 fatias)", price: 180 },
+  { id: "28", name: "28cm (40 a 45 fatias)", price: 270 },
+  { id: "33", name: "33cm (65 a 70 fatias)", price: 300 },
 ]
 
 const fillingLayersOptions: ProductOption[] = [
   { id: "one", name: "1 Camada", price: 0 },
-  { id: "two", name: "2 Camadas", price: 15 },
+  { id: "two", name: "2 Camadas", price: 10 },
 ]
 
 const simpleFillingOptions: ProductOption[] = [
-  { id: "chocolate", name: "Chocolate", price: 0 },
-  { id: "dulcedeleche", name: "Doce de Leite", price: 0 },
-  { id: "strawberry", name: "Morango", price: 0 },
+  { id: "4leites", name: "4 Leites", price: 0 },
   { id: "brigadeiro", name: "Brigadeiro", price: 0 },
-  { id: "coconut", name: "Coco", price: 0 },
+  { id: "leiteninho", name: "Leite Ninho", price: 0 },
+  { id: "chocolate", name: "Chocolate", price: 0 },
+  { id: "morangoaoleite", name: "Morango ao Leite", price: 0 },
+  { id: "maracujaaoleite", name: "Moracujá ao Leite", price: 0 },
 ]
 
 const gourmetFillingOptions: ProductOption[] = [
-  { id: "nutella", name: "Nutella", price: 10 },
-  { id: "ferrero", name: "Ferrero Rocher", price: 15 },
-  { id: "kitkat", name: "Kit Kat", price: 8 },
-  { id: "oreo", name: "Oreo", price: 8 },
-  { id: "redfruits", name: "Frutas Vermelhas", price: 12 },
+  { id: "4leitescomabacaxi", name: "4 Leites com Abacaxi", price: 20 },
+  { id: "brigadeirotradicional", name: "Brigadeiro Tradicional com Morango Fresco", price: 25 },
+  { id: "leiteninhomorango", name: "Leite Ninho com Morango Fresco", price: 25 },
+  { id: "doceleiteameixa", name: "Doce de leite com Ameixa", price: 30 },
+  { id: "prestigio", name: "Prestígio", price: 20 },
+  { id: "leiteninhonutella", name: "Leite Ninho com Nutella", price: 25 },
+  { id: "nozes", name: "Nozes", price: 25 },
+  { id: "recheiobombom", name: "Recheio de Bombom", price: 30 },
+  { id: "ganachemeioamargo", name: "Ganache Meio Amargo", price: 30 },
+  { id: "ferreroroche", name: "Ferrero Roche", price: 30 },
+  { id: "ganache", name: "Ganache", price: 30 },
+  { id: "ourobranco", name: "Ouro Branco", price: 20 },
 ]
 
 const topperOptions: ProductOption[] = [
   { id: "none", name: "Sem Topper", price: 0 },
-  { id: "simple", name: "Topper Simples", price: 10 },
-  { id: "3d", name: "Topper 3D", price: 25 },
+  { id: "simple", name: "Topper Simples", price: 20 },
+  { id: "3d", name: "Topper 3D", price: 35 },
+]
+
+const topperAndar: ProductOption[] = [
+  { id: "simple", name: "Topper Simples (Gratuito)", price: 0 },
+  { id: "3d", name: "Topper 3D (Gratuito)", price: 0 },
 ]
 
 const additionalOptions: ProductOption[] = [
-  { id: "candles", name: "Velas", price: 5 },
-  { id: "sparkles", name: "Velas Sparkle", price: 8 },
-  { id: "fruits", name: "Frutas Frescas", price: 12 },
-  { id: "chocolates", name: "Chocolates Decorativos", price: 15 },
-  { id: "flowers", name: "Flores Comestíveis", price: 20 },
+  { id: "perolas", name: "Pérolas", price: 10 },
+  { id: "brigadeiros", name: "Brigadeiros", price: 20 },
+  { id: "morangos", name: "Morangos", price: 20 },
+  { id: "glitter", name: "Glitter", price: 20 },
+  { id: "brilho", name: "Brilho", price: 20 },
 ]
 
+// Opções de recheio para cupcake
+const cupcakeFillingOptions: ProductOption[] = [
+  { id: "docedeleite", name: "Doce de Leite", price: 0 },
+  { id: "leiteninho", name: "Leite Ninho", price: 0 },
+  { id: "brigadeiro", name: "Brigadeiro", price: 0 },
+  { id: "morangoaoleite", name: "Morango ao Leite", price: 0 },
+]
+
+// Atualize os produtos que precisam de quantidade mínima
 export const products: Product[] = [
   {
     id: "1",
@@ -94,7 +173,7 @@ export const products: Product[] = [
         type: "cakeSize",
         label: "Escolha o Tamanho",
         required: true,
-        options: cakeSizeOptions,
+        options: cakesizeRedondo,
       },
       {
         type: "fillingLayers",
@@ -140,6 +219,12 @@ export const products: Product[] = [
         label: "Escolha a Massa",
         required: true,
         options: cakeBaseOptions,
+      },
+      {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeRetangular,
       },
       {
         type: "fillingLayers",
@@ -188,6 +273,19 @@ export const products: Product[] = [
         options: cakeBaseOptions,
       },
       {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeMetro,
+      },
+
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
+      },
+      {
         type: "simpleFilling",
         label: "Escolha de Recheio Simples",
         required: true,
@@ -219,8 +317,23 @@ export const products: Product[] = [
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: cakeBaseOptions,
+        options: cakeBaseAndar,
       },
+
+      {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: cakeSizeAndar,
+      },
+
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
+      },
+
       {
         type: "simpleFilling",
         label: "Escolha de Recheio Simples",
@@ -234,7 +347,7 @@ export const products: Product[] = [
       },
       {
         type: "topper",
-        label: "Topper",
+        label: "Topper (Gratuito)",
         required: true,
         options: topperOptions,
       },
@@ -264,7 +377,14 @@ export const products: Product[] = [
         type: "cakeSize",
         label: "Escolha o Tamanho",
         required: true,
-        options: cakeSizeOptions,
+        options: cakeSizeAcetato,
+      },
+
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
       },
       {
         type: "simpleFilling",
@@ -277,12 +397,18 @@ export const products: Product[] = [
         label: "Escolha de Recheio Gourmet (Opcional)",
         options: gourmetFillingOptions,
       },
+      {
+        type: "additional",
+        label: "Adicionais (Opcional)",
+        multiple: true,
+        options: additionalOptions,
+      },
     ],
   },
   {
     id: "6",
     name: "Bolo Piscina",
-    price: 40.0,
+    price: 50.0,
     category: "Bolo",
     description: "Bolo temático com formato de piscina, perfeito para festas de verão e pool parties.",
     imageUrl: "/bolo-piscina.jpeg",
@@ -291,23 +417,13 @@ export const products: Product[] = [
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: cakeBaseOptions,
+        options: cakeBasePiscina,
       },
       {
         type: "simpleFilling",
-        label: "Escolha de Recheio Simples",
+        label: "Escolha de Cobertura",
         required: true,
-        options: simpleFillingOptions,
-      },
-      {
-        type: "additional",
-        label: "Adicionais (Opcional)",
-        multiple: true,
-        options: [
-          { id: "candles", name: "Velas", price: 5 },
-          { id: "sparkles", name: "Velas Sparkle", price: 8 },
-          { id: "figures", name: "Bonecos para Piscina", price: 15 },
-        ],
+        options: cakeCoberturaPiscina,
       },
     ],
   },
@@ -320,31 +436,27 @@ export const products: Product[] = [
     imageUrl: "/bolo-vulcao-1.jpeg",
     customizationOptions: [
       {
+        type: "cakeSize",
+        label: "Escolha o Tamanho",
+        required: true,
+        options: [
+          { id: "tradicional", name: "Tradicional (Rende de 15 a 20 fatias)", price: 45 },
+          { id: "gigante", name: "Gigante (Rende de 20 a 25 fatias)", price: 80 },
+        ],
+      },
+      {
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: [
-          { id: "chocolate", name: "Chocolate", price: 0 },
-          { id: "vanilla", name: "Baunilha", price: 0 },
-        ],
+        options: cakeBasePiscina,
       },
       {
         type: "filling",
         label: "Escolha o Recheio",
         required: true,
         options: [
-          { id: "chocolate", name: "Chocolate", price: 0 },
-          { id: "dulcedeleche", name: "Doce de Leite", price: 0 },
-          { id: "nutella", name: "Nutella", price: 5 },
-        ],
-      },
-      {
-        type: "additional",
-        label: "Adicionais (Opcional)",
-        multiple: true,
-        options: [
-          { id: "candles", name: "Velas", price: 5 },
-          { id: "sparkles", name: "Velas Sparkle", price: 8 },
+          { id: "leiteninho", name: "Leite Ninho", price: 0 },
+          { id: "brigadeiro", name: "Brigadeiro", price: 0 },
         ],
       },
     ],
@@ -356,35 +468,29 @@ export const products: Product[] = [
     category: "Cupcake",
     description: "Deliciosos cupcakes individuais com cobertura cremosa e decorações personalizadas.",
     imageUrl: "/cupcake.jpeg",
+    quantityConfig: {
+      minQuantity: 10,
+      defaultQuantity: 10,
+    },
     customizationOptions: [
       {
-        type: "cakeBase",
-        label: "Escolha a Massa",
+        type: "cakeType",
+        label: "Escolha o Tipo",
         required: true,
         options: [
-          { id: "vanilla", name: "Baunilha", price: 0 },
-          { id: "chocolate", name: "Chocolate", price: 0 },
-          { id: "redvelvet", name: "Red Velvet", price: 1 },
+          { id: "simples", name: "Simples", price: 3.5 },
+          { id: "recheado", name: "Recheado", price: 4.0 },
         ],
       },
       {
-        type: "topping",
-        label: "Escolha a Cobertura",
+        type: "filling",
+        label: "Escolha o Recheio",
         required: true,
-        options: [
-          { id: "buttercream", name: "Buttercream", price: 0 },
-          { id: "chocolate", name: "Chocolate", price: 0 },
-          { id: "cream_cheese", name: "Cream Cheese", price: 1 },
-        ],
-      },
-      {
-        type: "decoration",
-        label: "Decoração (Opcional)",
-        options: [
-          { id: "sprinkles", name: "Granulado", price: 0.5 },
-          { id: "fruits", name: "Frutas", price: 1 },
-          { id: "chocolate_chips", name: "Gotas de Chocolate", price: 0.5 },
-        ],
+        options: cupcakeFillingOptions,
+        dependsOn: {
+          type: "cakeType",
+          value: "recheado",
+        },
       },
     ],
   },
@@ -396,12 +502,21 @@ export const products: Product[] = [
     description: "Bolo artístico com design de aquário, incluindo elementos decorativos que imitam a vida marinha.",
     imageUrl: "/bolo-aquario-1.jpeg",
     isFeatured: true,
+    freeDelivery: true, // Entrega gratuita
+    freeTopper: true, // Topper gratuito
     customizationOptions: [
       {
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: cakeBaseOptions,
+        options: cakeBaseAndar,
+      },
+
+      {
+        type: "fillingLayers",
+        label: "Quantidade de Recheio",
+        required: true,
+        options: fillingLayersOptions,
       },
       {
         type: "simpleFilling",
@@ -414,15 +529,19 @@ export const products: Product[] = [
         label: "Escolha de Recheio Gourmet (Opcional)",
         options: gourmetFillingOptions,
       },
+
       {
-        type: "decoration",
-        label: "Decoração Temática",
+        type: "topper",
+        label: "Topper (Gratuito)",
         required: true,
-        options: [
-          { id: "basic", name: "Básica (Peixes e Algas)", price: 0 },
-          { id: "advanced", name: "Avançada (Peixes, Algas e Corais)", price: 50 },
-          { id: "premium", name: "Premium (Peixes, Algas, Corais e Personagens)", price: 100 },
-        ],
+        options: topperAndar,
+      },
+
+      {
+        type: "additional",
+        label: "Adicionais (Opcional)",
+        multiple: true,
+        options: additionalOptions,
       },
     ],
   },
@@ -433,25 +552,25 @@ export const products: Product[] = [
     category: "Bolo",
     description: "Porção individual de bolo em formato de marmita, prática e perfeita para pequenas comemorações.",
     imageUrl: "/bolo-marmita.jpeg",
+    quantityConfig: {
+      minQuantity: 10,
+      defaultQuantity: 10,
+    },
     customizationOptions: [
       {
         type: "cakeBase",
         label: "Escolha a Massa",
         required: true,
-        options: [
-          { id: "vanilla", name: "Baunilha", price: 0 },
-          { id: "chocolate", name: "Chocolate", price: 0 },
-          { id: "carrot", name: "Cenoura", price: 0 },
-        ],
+        options: cakeBasePiscina,
       },
       {
-        type: "topping",
+        type: "cobertura",
         label: "Escolha a Cobertura",
         required: true,
         options: [
-          { id: "none", name: "Sem Cobertura", price: 0 },
-          { id: "chocolate", name: "Chocolate", price: 1 },
-          { id: "condensed_milk", name: "Leite Condensado", price: 1 },
+          { id: "brigadeiro", name: "Brigadeiro", price: 0 },
+          { id: "leiteninho", name: "Leite Ninho", price: 0 },
+          { id: "chocolate", name: "Chocolate", price: 0 },
         ],
       },
     ],
@@ -468,24 +587,22 @@ export const products: Product[] = [
         type: "flavors",
         label: "Escolha os Sabores",
         required: true,
-        multiple: true,
+        multiple: false,
         options: [
           { id: "brigadeiro", name: "Brigadeiro", price: 0 },
           { id: "beijinho", name: "Beijinho", price: 0 },
-          { id: "casadinho", name: "Casadinho", price: 0 },
-          { id: "churros", name: "Churros", price: 5 },
-          { id: "nutella", name: "Nutella", price: 10 },
-          { id: "ninho", name: "Ninho", price: 5 },
+          { id: "amores", name: "2 Amores", price: 0 },
+          { id: "ninhonutella", name: "Ninho com Nutella", price: 20 },
         ],
       },
       {
-        type: "decoration",
-        label: "Decoração",
+        type: "quantidade",
+        label: "Quantidade",
         required: true,
         options: [
-          { id: "sprinkles", name: "Granulado", price: 0 },
-          { id: "sugar", name: "Açúcar", price: 0 },
-          { id: "custom", name: "Personalizada", price: 10 },
+          { id: "50", name: "50 Docinhos", price: 80 },
+          { id: "100", name: "100 Docinhos", price: 150 },
+          { id: "200", name: "200 Docinhos", price: 260 },
         ],
       },
     ],
@@ -503,5 +620,28 @@ export function getProductsByCategory(category: string): Product[] {
 
 export function getProductById(id: string): Product | undefined {
   return products.find((product) => product.id === id)
+}
+
+export function getSizeMultiplier(sizeId: string): number {
+  const sizeMultipliers: Record<string, number> = {
+    // Bolos Redondos
+    '17': 1,  // 17cm
+    '23': 2,  // 23cm
+    '28': 3,  // 28cm
+    '33': 4,  // 33cm
+    '40': 5,  // 40cm
+    // Bolos Retangulares
+    'small': 1,   // 25x20cm
+    'medium': 2,  // 33x25
+    'large': 3,   // 40x25
+    // Bolos Metro
+    'meiometro': 1,  // Meio Metro
+    'ummetro': 2,    // Um Metro
+    // Bolos de Andar
+    'doisandares': 2,  // 2 Andares
+    'tresandares': 3,  // 3 Andares
+  }
+
+  return sizeMultipliers[sizeId] || 1
 }
 

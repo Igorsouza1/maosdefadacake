@@ -7,21 +7,29 @@ export function useFavorites() {
 
   // Carregar favoritos do localStorage quando o componente montar
   useEffect(() => {
-    const storedFavorites = localStorage.getItem("favorites")
-    if (storedFavorites) {
-      setFavorites(JSON.parse(storedFavorites))
+    if (typeof window !== "undefined") {
+      const storedFavorites = localStorage.getItem("favorites")
+      if (storedFavorites) {
+        try {
+          setFavorites(JSON.parse(storedFavorites))
+        } catch (error) {
+          console.error("Erro ao carregar favoritos:", error)
+        }
+      }
     }
   }, [])
 
   // Salvar favoritos no localStorage quando mudar
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites))
+    if (typeof window !== "undefined") {
+      localStorage.setItem("favorites", JSON.stringify(favorites))
+    }
   }, [favorites])
 
   const toggleFavorite = (productId: string) => {
-    setFavorites(prev => {
+    setFavorites((prev) => {
       if (prev.includes(productId)) {
-        return prev.filter(id => id !== productId)
+        return prev.filter((id) => id !== productId)
       } else {
         return [...prev, productId]
       }
@@ -34,3 +42,4 @@ export function useFavorites() {
 
   return { favorites, toggleFavorite, isFavorite }
 }
+
