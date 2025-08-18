@@ -43,6 +43,8 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState<Address | null>(null)
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
 
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
   // Verificar se algum produto tem entrega gratuita
   const hasFreeDelivery = useMemo(() => {
     return items.some((item) => item.hasFreeDelivery)
@@ -163,7 +165,7 @@ export default function CheckoutPage() {
     return encodeURIComponent(message)
   }
 
-  const handleFinishOrder = () => {
+  const handleFinishOrder = async () => {
     if (!date) {
       toast.error("Por favor, selecione uma data para o pedido")
       return
@@ -178,6 +180,37 @@ export default function CheckoutPage() {
       toast.error("Por favor, adicione um endereço de entrega")
       return
     }
+
+    setIsSubmitting(true)
+
+    try {
+      // 1. Preparar os dados para enviar para a API
+      const orderData = {
+        deliveryType,
+        date: format(date, "dd/MM/yyyy"), // Enviar data já formatada
+        time,
+        address,
+        items,
+        totalPrice,
+        deliveryFee,
+      }
+
+      // 2. Chamar a nossa API para salvar na planilha
+      const response = await fetch("/api/submit-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      if (!response.ok) {
+        // Se a API retornar um erro, avise o usuário
+        throw new Error("Não foi possível registrar seu pedido. Tente novamente.")
+      }
+    } catch (error) {
+      console.error("Erro ao enviar pedido:", error)  
+     }
 
     // Formatar a mensagem para o WhatsApp
     const whatsappMessage = formatWhatsAppMessage()
