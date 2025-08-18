@@ -446,9 +446,13 @@ export default function CheckoutPage() {
           <p className="text-sm opacity-90">Total do Pedido</p>
           <p className="font-bold text-xl">R$ {(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}</p>
         </div>
-        <Button className="bg-white text-rose-700 hover:bg-gray-100 px-6" onClick={handleFinishOrder}>
-          Finalizar Pedido
-        </Button>
+        <Button 
+            className="bg-white text-rose-700 hover:bg-gray-100 px-6" 
+            onClick={handleFinishOrder}
+            disabled={isSubmitting} // Adicione esta linha
+          >
+            {isSubmitting ? "Enviando..." : "Finalizar Pedido"} {/* Feedback visual */}
+          </Button>
       </div>
 
       {/* Dialog para adicionar/editar endereço */}
