@@ -16,23 +16,71 @@ import { cn } from "@/lib/utils"
 import { AddressDialog, type Address } from "@/components/address-dialog"
 import { Badge } from "@/components/ui/badge"
 
+// ========================= CONSTANTES =========================
 const DELIVERY_FEE = 20.0
-const WHATSAPP_NUMBER = "5567996184308" // Substitua pelo número real da loja
+const WHATSAPP_NUMBER = "5567996184308" // Apenas dígitos
 
 // Horários disponíveis para entrega
-const DELIVERY_HOURS = [ "13:30","17:30", "18:00", "19:00"]
+const DELIVERY_HOURS = ["13:30", "17:30", "18:00", "19:00"]
 
 // Horários disponíveis para retirada na loja
-const PICKUP_HOURS = [
-  "11:00",
-  "12:00",
-  "15:00",
-  "18:00",
-  "19:00",
-]
+const PICKUP_HOURS = ["11:00", "12:00", "15:00", "18:00", "19:00"]
 
 const ADDRESS_STORAGE_KEY = "user-delivery-address"
 
+// ========================= HELPERS NOVOS =========================
+function buildWhatsAppUrl(phone: string, text: string) {
+  const digits = phone.replace(/\D/g, "")
+  const encoded = encodeURIComponent(text)
+  return {
+    waMe: `https://wa.me/${digits}?text=${encoded}`,
+    waScheme: `whatsapp://send?phone=${digits}&text=${encoded}`,
+    webWhats: `https://web.whatsapp.com/send?phone=${digits}&text=${encoded}`,
+  }
+}
+
+// Abre o WhatsApp evitando bloqueios de pop-up
+function openWhatsAppSafely(urls: { waMe: string; waScheme: string; webWhats: string }) {
+  // Pré-abre uma aba sincronamente (mais difícil de ser bloqueada)
+  const win = window.open("", "_blank")
+
+  // 1) Tenta wa.me
+  try {
+    if (win) {
+      win.location.href = urls.waMe
+      return true
+    } else {
+      window.location.href = urls.waMe
+      return true
+    }
+  } catch {}
+
+  // 2) Tenta esquema nativo (bom em iOS/Android)
+  try {
+    if (win) {
+      win.location.href = urls.waScheme
+      return true
+    } else {
+      window.location.href = urls.waScheme
+      return true
+    }
+  } catch {}
+
+  // 3) Tenta Web WhatsApp (desktop)
+  try {
+    if (win) {
+      win.location.href = urls.webWhats
+      return true
+    } else {
+      window.location.href = urls.webWhats
+      return true
+    }
+  } catch {}
+
+  return false
+}
+
+// ========================= COMPONENTE =========================
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, totalPrice, clearCart } = useCart()
@@ -42,7 +90,6 @@ export default function CheckoutPage() {
   const [timeOpen, setTimeOpen] = useState(false)
   const [address, setAddress] = useState<Address | null>(null)
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
-
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Verificar se algum produto tem entrega gratuita
@@ -89,20 +136,17 @@ export default function CheckoutPage() {
     return DELIVERY_FEE
   }, [deliveryType, hasFreeDelivery])
 
+  // >>> ALTERADO: não faz encodeURIComponent aqui; retorna texto puro com \n
   const formatWhatsAppMessage = () => {
     if (!date || !time) return ""
 
     const formattedDate = format(date, "dd/MM/yyyy", { locale: ptBR })
 
-    // Cabeçalho da mensagem
     let message = `*NOVO PEDIDO - MÃOS DE FADA CAKE*\n\n`
-
-    // Informações de entrega
     message += `*Tipo de Entrega:* ${deliveryType === "delivery" ? "Entrega" : "Retirada na Loja"}\n`
     message += `*Data:* ${formattedDate}\n`
     message += `*Horário:* ${time}\n\n`
 
-    // Endereço (se for entrega)
     if (deliveryType === "delivery" && address) {
       message += `*Endereço de Entrega:*\n`
       message += `${address.street}, ${address.number}\n`
@@ -112,7 +156,6 @@ export default function CheckoutPage() {
       message += `${address.neighborhood}\n\n`
     }
 
-    // Itens do pedido
     message += `*ITENS DO PEDIDO:*\n\n`
 
     items.forEach((item, index) => {
@@ -120,62 +163,52 @@ export default function CheckoutPage() {
       message += `Quantidade: ${item.quantity}\n`
       message += `Valor unitário: R$ ${item.totalPrice.toFixed(2).replace(".", ",")}\n`
 
-      // Customizações
       if (item.customizations && item.customizations.length > 0) {
         message += `*Customizações:*\n`
-
-        // Agrupar customizações por tipo
         const customizationsByType: Record<string, string[]> = {}
-
         item.customizations.forEach((customization) => {
           if (!customizationsByType[customization.label]) {
             customizationsByType[customization.label] = []
           }
           customizationsByType[customization.label].push(customization.value)
         })
-
-        // Adicionar customizações agrupadas
         Object.entries(customizationsByType).forEach(([label, values]) => {
           message += `- ${label}: ${values.join(", ")}\n`
         })
       }
 
-      // Mensagem personalizada
       if (item.customMessage) {
         message += `*Mensagem:* "${item.customMessage}"\n`
       }
-
-      // Informações de entrega gratuita ou topper gratuito
       if (item.hasFreeDelivery) {
         message += `*Entrega:* Grátis\n`
       }
       if (item.hasFreeTopper) {
         message += `*Topper:* Grátis\n`
       }
-
       message += `\n`
     })
 
-    // Resumo de valores
     message += `*RESUMO DE VALORES:*\n`
     message += `Subtotal: R$ ${totalPrice.toFixed(2).replace(".", ",")}\n`
-    message += `Taxa de entrega: ${deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`}\n`
+    message += `Taxa de entrega: ${
+      deliveryFee === 0 ? "Grátis" : `R$ ${deliveryFee.toFixed(2).replace(".", ",")}`
+    }\n`
     message += `*Total: R$ ${(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}`
 
-    return encodeURIComponent(message)
+    return message
   }
 
+  // >>> ALTERADO: abre WhatsApp antes do await (evita bloqueio) e tenta múltiplos esquemas
   const handleFinishOrder = async () => {
     if (!date) {
       toast.error("Por favor, selecione uma data para o pedido")
       return
     }
-
     if (!time) {
       toast.error("Por favor, selecione um horário para o pedido")
       return
     }
-
     if (deliveryType === "delivery" && !address) {
       toast.error("Por favor, adicione um endereço de entrega")
       return
@@ -183,11 +216,24 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true)
 
+    // 1) Monta mensagem antes de qualquer await
+    const whatsappMessage = formatWhatsAppMessage()
+    if (!whatsappMessage) {
+      toast.error("Não foi possível montar a mensagem do WhatsApp. Verifique data e horário.")
+      setIsSubmitting(false)
+      return
+    }
+
+    const urls = buildWhatsAppUrl(WHATSAPP_NUMBER, whatsappMessage)
+
+    // 2) Abre WhatsApp sincronamente (minimiza bloqueio de pop-up)
+    const opened = openWhatsAppSafely(urls)
+
+    // 3) Em paralelo, registra o pedido (não bloqueia o WhatsApp)
     try {
-      // 1. Preparar os dados para enviar para a API
       const orderData = {
         deliveryType,
-        date: format(date, "dd/MM/yyyy"), // Enviar data já formatada
+        date: format(date, "dd/MM/yyyy"),
         time,
         address,
         items,
@@ -195,32 +241,21 @@ export default function CheckoutPage() {
         deliveryFee,
       }
 
-      // 2. Chamar a nossa API para salvar na planilha
       const response = await fetch("/api/submit-order", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
       })
 
       if (!response.ok) {
-        // Se a API retornar um erro, avise o usuário
-        throw new Error("Não foi possível registrar seu pedido. Tente novamente.")
+        throw new Error("Falha ao registrar o pedido na planilha.")
       }
     } catch (error) {
-      console.error("Erro ao enviar pedido:", error)  
-     }
+      console.error("Erro ao enviar pedido:", error)
+      toast.error("Seu pedido abriu no WhatsApp, mas houve erro ao registrar na planilha.")
+    }
 
-    // Formatar a mensagem para o WhatsApp
-    const whatsappMessage = formatWhatsAppMessage()
-
-    // Criar a URL do WhatsApp
-    const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${whatsappMessage}`
-
-    // Abrir o WhatsApp em uma nova aba
-    window.open(whatsappUrl, "_blank")
-
+    // 4) Feedback + limpeza
     toast.success("Pedido finalizado com sucesso!", {
       description: `Seu pedido será ${
         deliveryType === "delivery"
@@ -230,9 +265,15 @@ export default function CheckoutPage() {
       duration: 5000,
     })
 
-    // Limpar o carrinho e redirecionar para a página inicial
     clearCart()
-    router.push("/")
+    setIsSubmitting(false)
+
+    // 5) Fallback caso o pop-up tenha sido bloqueado
+    if (!opened) {
+      window.location.href = urls.waMe
+    } else {
+      setTimeout(() => router.push("/"), 300)
+    }
   }
 
   if (items.length === 0) {
@@ -406,8 +447,8 @@ export default function CheckoutPage() {
             </Popover>
             <p className="text-xs text-gray-500 mt-1">
               {deliveryType === "delivery"
-                ? "Horários disponíveis para entrega: 10h às 18h"
-                : "Horários disponíveis para retirada: 9h às 20h"}
+                ? "Horários disponíveis para entrega."
+                : "Horários disponíveis para retirada."}
             </p>
           </div>
         </div>
@@ -446,13 +487,13 @@ export default function CheckoutPage() {
           <p className="text-sm opacity-90">Total do Pedido</p>
           <p className="font-bold text-xl">R$ {(totalPrice + deliveryFee).toFixed(2).replace(".", ",")}</p>
         </div>
-        <Button 
-            className="bg-white text-rose-700 hover:bg-gray-100 px-6" 
-            onClick={handleFinishOrder}
-            disabled={isSubmitting} // Adicione esta linha
-          >
-            {isSubmitting ? "Enviando..." : "Finalizar Pedido"} {/* Feedback visual */}
-          </Button>
+        <Button
+          className="bg-white text-rose-700 hover:bg-gray-100 px-6"
+          onClick={handleFinishOrder}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Enviando..." : "Finalizar Pedido"}
+        </Button>
       </div>
 
       {/* Dialog para adicionar/editar endereço */}
@@ -465,4 +506,3 @@ export default function CheckoutPage() {
     </div>
   )
 }
-
