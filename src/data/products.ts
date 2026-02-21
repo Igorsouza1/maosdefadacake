@@ -405,28 +405,28 @@ export const products: Product[] = [
       },
     ],
   },
-  {
-    id: "6",
-    name: "Bolo Piscina",
-    price: 50.0,
-    category: "Bolo",
-    description: "Bolo temático com formato de piscina, perfeito para festas de verão e pool parties.",
-    imageUrl: "/bolo-piscina.jpeg",
-    customizationOptions: [
-      {
-        type: "cakeBase",
-        label: "Escolha a Massa",
-        required: true,
-        options: cakeBasePiscina,
-      },
-      {
-        type: "simpleFilling",
-        label: "Escolha de Cobertura",
-        required: true,
-        options: cakeCoberturaPiscina,
-      },
-    ],
-  },
+  // {
+  //   id: "6",
+  //   name: "Bolo Piscina",
+  //   price: 50.0,
+  //   category: "Bolo",
+  //   description: "Bolo temático com formato de piscina, perfeito para festas de verão e pool parties.",
+  //   imageUrl: "/bolo-piscina.jpeg",
+  //   customizationOptions: [
+  //     {
+  //       type: "cakeBase",
+  //       label: "Escolha a Massa",
+  //       required: true,
+  //       options: cakeBasePiscina,
+  //     },
+  //     {
+  //       type: "simpleFilling",
+  //       label: "Escolha de Cobertura",
+  //       required: true,
+  //       options: cakeCoberturaPiscina,
+  //     },
+  //   ],
+  // },
   {
     id: "7",
     name: "Bolo Vulcão",
