@@ -59,11 +59,11 @@ const cakeBasePiscina: ProductOption[] = [
   { id: "baunilha", name: "Baunilha", price: 0 },
 ]
 
-const cakeCoberturaPiscina: ProductOption[] = [
-  { id: "leiteninho", name: "Leite Ninho", price: 0 },
-  { id: "chocolate", name: "Chocolate", price: 0 },
-  { id: "maracuja", name: "Mousse de Maracujá", price: 0 },
-]
+// const cakeCoberturaPiscina: ProductOption[] = [
+//   { id: "leiteninho", name: "Leite Ninho", price: 0 },
+//   { id: "chocolate", name: "Chocolate", price: 0 },
+//   { id: "maracuja", name: "Mousse de Maracujá", price: 0 },
+// ]
 
 
 const cakesizeRedondo: ProductOption[] = [
