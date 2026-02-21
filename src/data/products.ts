@@ -497,7 +497,7 @@ export const products: Product[] = [
   {
     id: "9",
     name: "Bolo Aquário",
-    price: 750.0,
+    price: 800.0,
     category: "Bolo",
     description: "Bolo artístico com design de aquário, incluindo elementos decorativos que imitam a vida marinha.",
     imageUrl: "/bolo-aquario-1.jpeg",
