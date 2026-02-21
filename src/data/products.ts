@@ -97,8 +97,8 @@ const cakeSizeAcetato: ProductOption[] = [
 ]
 
 const fillingLayersOptions: ProductOption[] = [
-  { id: "one", name: "1 Camada", price: 0 },
-  { id: "two", name: "2 Camadas", price: 10 },
+  { id: "one", name: "1 Recheio", price: 0 },
+  { id: "two", name: "2 Recheios", price: 10 },
 ]
 
 const simpleFillingOptions: ProductOption[] = [
@@ -578,7 +578,7 @@ export const products: Product[] = [
   {
     id: "11",
     name: "Docinhos (cento)",
-    price: 70.0,
+    price: 150.0,
     category: "Docinho",
     description: "Cento de docinhos variados, incluindo brigadeiros, beijinhos e outros sabores tradicionais.",
     imageUrl: "/docinho-1.jpeg",
