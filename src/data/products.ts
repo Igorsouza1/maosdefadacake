@@ -260,7 +260,7 @@ export const products: Product[] = [
   {
     id: "3",
     name: "Bolo de Metro",
-    price: 600.0,
+    price: 900.0,
     category: "Bolo",
     description: "Bolo comprido com um metro de extensão, perfeito para grandes eventos e celebrações.",
     imageUrl: "/um-metro.jpeg",
